@@ -23,7 +23,7 @@ public class LCAParseOptions {
     private String mapFilename = null;
     private int fileFormat = 0;
     public final static String version="v0.1";
-    private int maxHitsToConsider = 1000;
+    private int maxHitsToConsider = 20;
     private double scorePercent = 90;
     private boolean limitToSpecies = false;
     private long expectedTaxon = 0;
@@ -45,7 +45,7 @@ public class LCAParseOptions {
         System.out.println("              (files needed are nodes.dmp and names.dmp)");
         System.out.println("    -mapfile specifies the location of an accession to taxon ID mapping file");
         System.out.println("    -format specifies input file format - either 'nanook', 'blasttab' or 'PAF'");
-        System.out.println("    -maxhits specifies maximum number of hits to consider for given read (default 1000)");
+        System.out.println("    -maxhits specifies maximum number of hits to consider for given read (default 20)");
         System.out.println("    -scorepercent specifies minimum score threshold as percentage of top score for given read (default 90)");
         System.out.println("    -limitspecies limits taxonomy to species level (default: off)");
         System.out.println("Analysis options:");

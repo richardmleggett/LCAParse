@@ -64,6 +64,12 @@ public class BlastHit implements LCAHit {
         } else {
             System.out.println("Couldn't split "+line);
             System.exit(1);
+        }       
+        
+        if (taxonId == -1) {
+            taxonomy.warnTaxa(targetName);
+        } else {
+            cacheTaxonIdPath();
         }        
     }
     
@@ -113,4 +119,10 @@ public class BlastHit implements LCAHit {
         }
         return 0;
     }    
+    
+    private void cacheTaxonIdPath() {
+        if (taxonId != -1) {
+            taxonIdPath = taxonomy.getTaxonIdPathFromId(taxonId);
+        }
+    }     
 }
