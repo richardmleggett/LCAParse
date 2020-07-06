@@ -11,17 +11,24 @@ import java.util.ArrayList;
  *
  * @author leggettr
  */
-public class HitSet {    
+public class BlastHitSet implements LCAHitSet{    
     private String queryName;
-    private ArrayList<PAFHit> alignments = new ArrayList<PAFHit>();
+    private ArrayList<LCAHit> alignments = new ArrayList<LCAHit>();
+    private double bestBitScore = 0;
+    private double bitScoreThreshold = 0;
     private double bestQueryCover = 0;
     private double bestIdentity = 0;
+    private double bestEValue = 0;
+    private LCAParseOptions options;
     
-    public HitSet(String query) {
+    public BlastHitSet(String query, LCAParseOptions o) {
         queryName = query;
+        options = o;
+        
     }
 
-    public void addAlignment(PAFHit ph) {
+    public void addAlignment(LCAHit hit) {
+        BlastHit bh = (BlastHit)hit;
         boolean addAlignment = false;
         boolean updateBest = false;
         
@@ -29,19 +36,16 @@ public class HitSet {
             // Is this better than our best?
             boolean foundNewBest = false;
 
-            if (ph.getQueryCover() > bestQueryCover) {
-                alignments.clear();
-                addAlignment = true;
+            if (bh.getAlignmentScore() > bestBitScore) {
                 updateBest = true;
-            } else if (ph.getQueryCover() == bestQueryCover) {
-                if (ph.getIdentity() > bestIdentity) {
-                    alignments.clear();
-                    addAlignment = true;
+            } else if (bh.getAlignmentScore() == bestBitScore) {
+                if (bh.getEValue() < bestEValue) {
                     updateBest = true;
-                } else if (ph.getIdentity() == bestIdentity) {
-                    // Ok, it's just as good, so keep it as well
-                    addAlignment = true;
                 }
+            }
+            
+            if (bh.getAlignmentScore() >= bitScoreThreshold) {
+                addAlignment = true;
             }
         } else {
             addAlignment = true;
@@ -49,11 +53,14 @@ public class HitSet {
         }
         
         if (addAlignment) {
-            alignments.add(ph);
+            alignments.add(bh);
         }
+        
         if (updateBest) {
-            bestQueryCover = ph.getQueryCover();
-            bestIdentity = ph.getIdentity();
+            bestBitScore = bh.getAlignmentScore();
+            bitScoreThreshold = (options.getScorePercent() * bestBitScore) / 100;
+            bestIdentity = bh.getIdentity();
+            bestEValue = bh.getEValue();
         }
     }
     
@@ -61,8 +68,8 @@ public class HitSet {
         return alignments.size();
     }
     
-    public PAFHit getAlignment(int n) {
-        PAFHit ph = null;
+    public LCAHit getAlignment(int n) {
+        LCAHit ph = null;
         
         if (n < alignments.size()) {
             ph = alignments.get(n);
@@ -80,4 +87,8 @@ public class HitSet {
                                "\t" + alignments.get(i).getIdentity());
         }
     }
+    
+     public boolean hasUnknownTaxa() {
+         return false;
+     }
 }

@@ -11,7 +11,7 @@ import java.util.ArrayList;
  *
  * @author leggettr
  */
-public class PAFHit {
+public class PAFHit implements LCAHit {
     private Taxonomy taxonomy;
     private AccessionTaxonConvertor accTaxConvert;
     private String queryName;
@@ -75,7 +75,7 @@ public class PAFHit {
         
         taxonId = accTaxConvert.getTaxonFromAccession(targetName);
         if (taxonId == -1) {
-            //System.out.println("Error: couldn't get ID "+targetName);
+            taxonomy.warnTaxa(targetName);
         } else {
             cacheTaxonIdPath();
         }
@@ -97,37 +97,38 @@ public class PAFHit {
         return identity;
     }
     
-    public int getAlignmentScore() {
-        return alignmentScore;
+    public double getAlignmentScore() {
+        return (double)alignmentScore;
     }
-    
+
     private void cacheTaxonIdPath() {
         if (taxonId != -1) {
             taxonIdPath = taxonomy.getTaxonIdPathFromId(taxonId);
         }
-    }    
+    } 
     
+    public void setTaxonIdPath(ArrayList<Long> path) {
+        taxonIdPath = path;
+    }
+
+    public long getTaxonId() {
+        return taxonId;
+    }
+            
     public int getTaxonLevel() {
         if (taxonIdPath != null) {
             return taxonIdPath.size(); // 1-offset
         }
         return 0;
     }    
-    
-    public long getLeafNode() {
-        return taxonId;
-    }    
-    
+        
     // Note level is 1-offset
     public long getTaxonNode(int level) {
-        if (level <= taxonIdPath.size()) {
-            return taxonIdPath.get(taxonIdPath.size() - level);
+        if (taxonIdPath != null) {
+            if (level <= taxonIdPath.size()) {
+                return taxonIdPath.get(taxonIdPath.size() - level);
+            }
         }
         return 0;
     }    
-    
-    public long getTaxonId() {
-        return taxonId;
-    }
-    
 }

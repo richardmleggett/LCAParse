@@ -42,11 +42,11 @@ public class AccessionTaxonConvertor {
                 //long gi = Long.parseLong(fields[3]);
                 accessionToTaxon.put(accession, taxonId);
                 count++;
-                if (count % 1000000 == 0) {
-                    System.out.println("    Read "+count+" entries");
-                }
+                //if (count % 1000000 == 0) {
+                //    System.out.println("    Read "+count+" entries");
+                //}
             }
-            System.out.println("Finished");
+            //System.out.println("Finished");
             br.close();            
         } catch (Exception e) {
             System.out.println("AccessionTaxonConvertor exception");

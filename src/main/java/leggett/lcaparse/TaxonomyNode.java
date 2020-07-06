@@ -3,7 +3,7 @@ package leggett.lcaparse;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node<T> {
+public class TaxonomyNode<T> {
     public static final short RANK_UNKNOWN = 0;
     public static final short RANK_CLASS = 1;
     public static final short RANK_COHORT = 2;
@@ -37,7 +37,7 @@ public class Node<T> {
     public static final short RANK_VARIETAS = 30;
 
     private T data;
-    private ArrayList<Node> children = new ArrayList();
+    private ArrayList<TaxonomyNode> children = new ArrayList();
     private Long taxonId;
     private Long parentId = null;
     private short rank;
@@ -47,7 +47,7 @@ public class Node<T> {
     private int displayRow = 0;
     private static int maxAssigned = 0;
             
-    public Node(Long id) {
+    public TaxonomyNode(Long id) {
         taxonId = id;
     }
     
@@ -65,7 +65,7 @@ public class Node<T> {
         return parentId;
     }
     
-    public void addChild(Node n) {
+    public void addChild(TaxonomyNode n) {
         children.add(n);
     }
     

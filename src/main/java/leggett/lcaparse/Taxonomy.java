@@ -24,11 +24,11 @@ public class Taxonomy {
     private int circleRadius = circleDiameter / 2;
     private final static int rowHeight = 32;
     private final static int colWidth = 50;
-    private Hashtable<Long, Node> nodesById = new Hashtable();
+    private Hashtable<Long, TaxonomyNode> nodesById = new Hashtable();
     private Hashtable<Long, String> nameById = new Hashtable();
     private Hashtable<String, Long> idByName = new Hashtable();
     private Hashtable<String, Long> accessionToTaxon = new Hashtable();
-    private Node unclassifiedNode = new Node(0L);
+    private TaxonomyNode unclassifiedNode = new TaxonomyNode(0L);
     private long humanId;
     private long bacteriaId;
     private long lambdaId;
@@ -45,6 +45,7 @@ public class Taxonomy {
     private int otherCount = 0;
     private int totalCountCheck = 0;
     private Rectangle bounds;
+    private Hashtable<String, Integer> warningTaxa = new Hashtable();
     
     public Taxonomy(String nodesFilename, String namesFilename) {
         try {
@@ -56,10 +57,10 @@ public class Taxonomy {
                 long id = Long.parseLong(fields[0]);
                 long parentId = Integer.parseInt(fields[2]);
                 String rank = fields[4];
-                Node n = nodesById.get(id);
+                TaxonomyNode n = nodesById.get(id);
                 
                 if (n == null) {               
-                    n = new Node(id);
+                    n = new TaxonomyNode(id);
                     nodesById.put(id, n);
                 }
                 
@@ -124,8 +125,6 @@ public class Taxonomy {
         }
         
         nameById.put(0L, "unclassified");
-
-        displayMemory();
         
         //System.out.println("Node 2 is "+getNameFromTaxonId(2L));
         //outputTaxonIdsFromNode(2L, "/Users/leggettr/Documents/Databases/taxonomy/bacteria_taxonids.txt");
@@ -166,11 +165,11 @@ public class Taxonomy {
         }
     }
     
-    public void outputNodeIdAndChildrenToFile(Node n, PrintWriter pw) {
+    public void outputNodeIdAndChildrenToFile(TaxonomyNode n, PrintWriter pw) {
         pw.println(n.getId());
-        ArrayList<Node> children = n.getChildren();
+        ArrayList<TaxonomyNode> children = n.getChildren();
         for (int i=0; i<children.size(); i++) {
-            Node c = children.get(i);
+            TaxonomyNode c = children.get(i);
             outputNodeIdAndChildrenToFile(c, pw);
         }
     }
@@ -181,10 +180,10 @@ public class Taxonomy {
         System.out.println(" Used memory: "+ ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024*1024)) + " Mb");
     }
         
-    private void linkParent(Node n, long parentId) {
-        Node parentNode = nodesById.get(parentId);
+    private void linkParent(TaxonomyNode n, long parentId) {
+        TaxonomyNode parentNode = nodesById.get(parentId);
         if (parentNode == null) {
-            parentNode = new Node(parentId);
+            parentNode = new TaxonomyNode(parentId);
             nodesById.put(parentId, parentNode);
         }
         parentNode.addChild(n);        
@@ -199,13 +198,13 @@ public class Taxonomy {
         return id;
     }
     
-    public Node getNodeFromTaxonId(Long id) {
+    public TaxonomyNode getNodeFromTaxonId(Long id) {
         return nodesById.get(id);
     }
     
-    public Node getNodeFromName(String name) {
+    public TaxonomyNode getNodeFromName(String name) {
         Long id = getTaxonIdFromName(name);
-        Node n = null;
+        TaxonomyNode n = null;
         if (id != null) {
             n = getNodeFromTaxonId(id);
         }
@@ -216,7 +215,7 @@ public class Taxonomy {
         String taxonString = "";
 
         if (id != null) {
-            Node n = getNodeFromTaxonId(id);
+            TaxonomyNode n = getNodeFromTaxonId(id);
 
             if (n != null) {
                 while (n != null) {
@@ -230,7 +229,7 @@ public class Taxonomy {
                     }
                     Long parentId = n.getParent();
                     if ((parentId != null) && (parentId != n.getId())) {
-                        Node newNode = getNodeFromTaxonId(parentId);
+                        TaxonomyNode newNode = getNodeFromTaxonId(parentId);
                         
                         if (n == newNode) {
                             System.out.println("Er... something went wrong!");
@@ -257,7 +256,7 @@ public class Taxonomy {
         if (id == 0) {
             nodes.add(0L);
         } else if (id != null) {
-            Node n = getNodeFromTaxonId(id);
+            TaxonomyNode n = getNodeFromTaxonId(id);
 
             while (n != null) {
                 nodes.add(n.getId());
@@ -282,7 +281,7 @@ public class Taxonomy {
         String taxonString = "";
 
         if (id != null) {
-            Node n = getNodeFromTaxonId(id);
+            TaxonomyNode n = getNodeFromTaxonId(id);
 
             if (n != null) {
                 while (n != null) {
@@ -309,7 +308,7 @@ public class Taxonomy {
     }
     
     private void countRead(Long id) {
-        Node n = getNodeFromTaxonId(id);
+        TaxonomyNode n = getNodeFromTaxonId(id);
         
         totalCountCheck++;
         
@@ -446,9 +445,9 @@ public class Taxonomy {
         //System.out.println("["+getTaxonomyStringFromName(species)+"]");
     }
     
-    public long findAncestor(HitSet bhs, int maxToParse) {
+    public long findAncestor(LCAHitSet bhs, int maxToParse, boolean limitToSpecies) {
         long ancestor = 0;
-        boolean debug = false;        
+        boolean debug = false;       
         
         if (bhs.getNumberOfAlignments() == 0) {
             System.out.println("Er... no alignments in findAncestor...");
@@ -467,7 +466,7 @@ public class Taxonomy {
             int taxonLevel = bhs.getAlignment(i).getTaxonLevel();
 
             if (debug) {
-                System.out.print(this.getTaxonomyStringFromId(bhs.getAlignment(i).getLeafNode()));
+                System.out.print(this.getTaxonomyStringFromId(bhs.getAlignment(i).getTaxonId()));
                 System.out.println(" "+taxonLevel);
             }
 
@@ -491,7 +490,8 @@ public class Taxonomy {
         }
 
         boolean same = true;
-        while ((same == true) && (level <= maxLevel)) {
+        boolean stop = false;
+        while ((same == true) && (level <= maxLevel) && (stop == false)) {
             long common = -1;
             for (int i=0; i<loopTo; i++) {
                 if (bhs.getAlignment(i).getTaxonLevel() > 0) { 
@@ -511,7 +511,22 @@ public class Taxonomy {
                 if (debug) {
                     System.out.println("Match on " + this.getNameFromTaxonId(common));
                 }
-                level++;
+
+                if (limitToSpecies) {
+                    if (bhs.getNumberOfAlignments() > 0) {
+                        TaxonomyNode n = getNodeFromTaxonId(bhs.getAlignment(0).getTaxonNode(level));
+                        if (n != null) {
+                            if (n.getRank() == TaxonomyNode.RANK_SPECIES) {
+                                stop = true;
+                            }
+                        }
+                    } else {
+                        System.out.println("No alignments!");
+                        System.exit(1);
+                    }
+                }
+                
+                level++;                
             }         
         }
 
@@ -529,184 +544,12 @@ public class Taxonomy {
         return ancestor;
     }
     
-    private void displayLevel(Node n, int l) {
-        String taxonString = getNameFromTaxonId(n.getId());
-        for (int i=0; i<l; i++) {
-            System.out.print("  ");
-        }
-        System.out.println(taxonString + " ("+n.getDisplayCol() + " , "+n.getDisplayRow()+")");
-        ArrayList<Node> children = n.getChildren();
-        for (int i=0; i<children.size(); i++) {
-            Node c = children.get(i);
-            
-            if (c.getSummarised() > 0) {
-                displayLevel(children.get(i), l+1);
-            }
-        }
-    }
-    
-    public void displayTaxonomy() {
-        Node n = getNodeFromTaxonId(1L);
-        displayLevel(n, 0);
-    }
-    
-    private int getMaxColumn() {
-        return maxColumn;
-    }
-    
-    private int getMaxRow() {
-        return maxRow;
-    }
-    
-    private int prepareNode(Node n, int col, int row) {
-        n.setDisplayPosition(col, row);
-        
-        if (col > maxColumn) {
-            maxColumn = col;
-        }
-        
-        ArrayList<Node> children = n.getChildren();
-        int childrenIncluded = 0;
-        for (int i=0; i<children.size(); i++) {
-            Node c = children.get(i);
-                        
-            if (c.getSummarised() > 0) {
-                childrenIncluded++;
-                if (childrenIncluded > 1) {
-                    row++;
-                }
-                row = prepareNode(c, col+1, row);
-            }
-        }
-        return row;
-    }
-    
-    public void prepareTreePlot() {
-        Node n = getNodeFromTaxonId(1L);
-        maxRow = prepareNode(n, 1, 1);
-        unclassifiedNode.setDisplayPosition(1, maxRow+1);
-        plotWidth = ((maxColumn+1)*colWidth) + 200;
-        plotHeight = (maxRow+2)*rowHeight;
-        System.out.println("plotWidth = "+plotWidth + " plotHeight = " + plotHeight);
-    }
-    
-    public int getUnclassifiedCount() {
-        return unclassifiedNode.getSummarised();
-    }
-    
-    private void connectNode(Graphics g, Node n, Node c) {
-        if (n.getDisplayRow() == c.getDisplayRow()) {
-            //g.drawLine(colToX(n.getDisplayCol()) + circleRadius, rowToY(n.getDisplayRow()), colToX(c.getDisplayCol()) - circleRadius, rowToY(c.getDisplayRow()));
-            g.drawLine(colToX(n.getDisplayCol()), rowToY(n.getDisplayRow()), colToX(c.getDisplayCol()), rowToY(c.getDisplayRow()));
-        } else {
-            //g.drawLine(colToX(n.getDisplayCol()) + circleRadius, rowToY(n.getDisplayRow()), colToX(n.getDisplayCol()) + circleDiameter, rowToY(n.getDisplayRow()));
-            //g.drawLine(colToX(n.getDisplayCol()) + circleDiameter, rowToY(n.getDisplayRow()), colToX(n.getDisplayCol()) + circleDiameter, rowToY(c.getDisplayRow()));
-            //g.drawLine(colToX(n.getDisplayCol()) + circleDiameter, rowToY(c.getDisplayRow()), colToX(c.getDisplayCol()) - circleRadius, rowToY(c.getDisplayRow()));
-            g.drawLine(colToX(n.getDisplayCol()), rowToY(n.getDisplayRow()), colToX(n.getDisplayCol()), rowToY(n.getDisplayRow()));
-            g.drawLine(colToX(n.getDisplayCol()), rowToY(n.getDisplayRow()), colToX(n.getDisplayCol()), rowToY(c.getDisplayRow()));
-            g.drawLine(colToX(n.getDisplayCol()), rowToY(c.getDisplayRow()), colToX(c.getDisplayCol()), rowToY(c.getDisplayRow()));
-        }
-    }
-    
-    private int colToX(int c) {
-        return ((c-1) * colWidth) + circleDiameter;
-    }
-    
-    private int rowToY(int r) {
-        return ((r-1) * rowHeight) + circleDiameter;
-    }
-
-    public int getPlotWidth() {
-        return plotWidth;
-    }
-
-    public int getPlotHeight() {
-        return plotHeight;
-    }
-    
-    private int setGraphicColourAndGetSizeForCount(Graphics g, Node n) {
-        Double v = Math.log((double)n.getAssigned()+1);
-        Double m = Math.log((double)Node.getMaxAssigned()+1);
-        //Double value = (double)n.getAssigned() / (double)Node.getMaxAssigned();
-        Double value = v / m;
-        double radius = value * circleDiameter;
-        
-        int aR = 255;   int aG = 255; int aB=255;  // RGB for our 1st color (blue in this case).
-        int bR = 0x31; int bG = 0x82; int bB=0xbd;    // RGB for our 2nd color (red in this case).
-        
-        int red   = (int)((double)(bR - aR) * value + aR);      // Evaluated as -255*value + 255.
-        int green = (int)((double)(bG - aG) * value + aG);      // Evaluates as 0.
-        int blue  = (int)((double)(bB - aB) * value + aB);      // Evaluates as 255*value + 0.
-    
-        g.setColor(new Color(red, green, blue));
-        
-        return (int)radius;       
-    }
-        
-    
-    private void drawConnections(Graphics g, Node n) {
-        ArrayList<Node> children = n.getChildren();
-        int childrenIncluded = 0;
-        
-        for (int i=0; i<children.size(); i++) {
-            Node c = children.get(i);
-            if (c.getSummarised() > 0) {
-                childrenIncluded++;
-                drawConnections(g, c);
-                connectNode(g, n, c);
-            }
-        }        
-    }
-    
-    private void drawNode(Graphics g, Node n) {
-        int diameter = setGraphicColourAndGetSizeForCount(g, n);
-        int x = colToX(n.getDisplayCol()) - (diameter/2);
-        int y = rowToY(n.getDisplayRow()) - (diameter/2);
-
-        if ((x >= (bounds.getX() - 32)) &&
-            (y >= (bounds.getY() - 32)) &&
-            (x <= (bounds.getX() + bounds.getWidth())) &&
-            (y <= (bounds.getY() + bounds.getHeight()))) {        
-            g.fillOval(x, y, diameter, diameter);
-            g.setColor(Color.BLACK);
-            g.drawOval(x, y, diameter, diameter);
-        }
-                
-        ArrayList<Node> children = n.getChildren();
-        int childrenIncluded = 0;
-        
-        for (int i=0; i<children.size(); i++) {
-            Node c = children.get(i);
-            if (c.getSummarised() > 0) {
-                childrenIncluded++;
-                drawNode(g, c);
-                //connectNode(g, n, c);
-            }
-        }
-        
-        if (childrenIncluded == 0) {
-            String taxonString = getNameFromTaxonId(n.getId());
-            g.drawString(taxonString, colToX(n.getDisplayCol()) + (diameter/2) + 4, rowToY(n.getDisplayRow()) + 4);
-            //System.out.println("Label "+taxonString + " " + n.getDisplayCol() + " " + n.getDisplayRow());
-        }
-    }
-    
-    public void drawTree(Graphics g) {
-        //System.out.println("Drawing tree...");
-        Node n = getNodeFromTaxonId(1L);
-        bounds = g.getClipBounds();
-        g.setFont(new Font("Arial", Font.PLAIN, 12)); 
-        drawConnections(g, n);
-        drawNode(g, n);
-        drawNode(g, unclassifiedNode);
-    }
-    
-    private void walkNode(Node n, HashMap counts) {
-        ArrayList<Node> children = n.getChildren();
+    private void walkNode(TaxonomyNode n, HashMap counts) {
+        ArrayList<TaxonomyNode> children = n.getChildren();
         int childrenIncluded = 0;
 
         for (int i=0; i<children.size(); i++) {
-            Node c = children.get(i);
+            TaxonomyNode c = children.get(i);
             if (c.getSummarised() > 0) {
                 childrenIncluded++;
                 walkNode(c, counts);
@@ -727,25 +570,41 @@ public class Taxonomy {
         return totalAssignedReads;
     }
     
-//    public Map<String, Integer> getLeafNodes() {
-//        HashMap<String, Integer> counts = new HashMap<String, Integer>();
-//        Node n = getNodeFromTaxonId(1L);
-//        totalAssignedReads = 0;
-//        otherCount = 0;
-//        walkNode(n, counts);
-//        System.out.println("otherCount="+otherCount);
-//        System.out.println("unclassified assigned="+unclassifiedNode.getAssigned());
-//        System.out.println("total count "+totalCountCheck);
-//        counts.put("Other ("+otherCount+")", otherCount);
-//        counts.put("Unclassified ("+unclassifiedNode.getAssigned()+")", unclassifiedNode.getAssigned());
-//                
-//        Map<String, Integer> sortedLeafCounts = WalkOutResults.sortByValues(counts);
-//
-//        return sortedLeafCounts;
-//    }
-    
     public int registerTree() {
         return nTrees++;
+    }
+    
+    public long getGenus(long taxon) {
+        long genus = 0;
+        long currentTaxon = taxon;
+        boolean failed = false;
+
+        while ((currentTaxon != 1) && (genus == 0) && (failed == false)) {
+            TaxonomyNode n = this.getNodeFromTaxonId(currentTaxon);
+            
+            if (n != null) {
+                if (n.getRank() == TaxonomyNode.RANK_GENUS) {
+                    genus = currentTaxon;
+                } else {
+                    Long parent = n.getParent();
+                    if (n == null) {
+                        System.out.println("WARNING: " + currentTaxon + " doesn't have a node");
+                        failed = true;
+                    } else {
+                        if (parent == null) {
+                            System.out.println(currentTaxon + " doesn't have a parent");
+                            System.exit(1);
+                        } else {
+                            n = getNodeFromTaxonId(parent);
+                            currentTaxon = n.getId();
+                        }
+                    }
+                }
+            } else {
+                failed = true;
+            }
+        }
+        return genus;
     }
     
     public boolean isTaxonAncestor(long taxon, long ancestor) {
@@ -760,7 +619,7 @@ public class Taxonomy {
         }
         
         while ((currentTaxon != ancestor) && (currentTaxon != 1) && (failed==false)) {
-            Node n = this.getNodeFromTaxonId(currentTaxon);
+            TaxonomyNode n = this.getNodeFromTaxonId(currentTaxon);
             
             if (n == null) {
                 System.out.println("WARNING: " + currentTaxon + " doesn't have a node");
@@ -784,5 +643,12 @@ public class Taxonomy {
         }
         
         return found;
+    }
+    
+    public void warnTaxa(String ascession) {
+        if (!warningTaxa.containsKey(ascession)) {
+            warningTaxa.put(ascession, 1);
+            //System.out.println("Warning: couldn't find taxon for "+ascession);
+        }
     }
 }
