@@ -42,12 +42,22 @@ public class LCAParse {
         //pfp.writeResults("/Users/leggettr/Desktop/PAFparse/results.txt");        
     }
     
- 
+    public void makeMapFile(LCAParseOptions options) {
+        Taxonomy taxonomy = new Taxonomy(options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+        AccessionMapFilter amf = new AccessionMapFilter(taxonomy);
+        amf.filterMapFile(options.getInputFilename(),options.getOutputFilename());
+    }
 
     public static void main(String[] args) {
         LCAParseOptions lpo = new LCAParseOptions();
-        LCAParse pp = new LCAParse();
         lpo.processCommandLine(args);
-        pp.parseFile(lpo);
+
+        if (lpo.doingMakeMap()) {
+            LCAParse pp = new LCAParse();
+            pp.makeMapFile(lpo);
+        } else {
+            LCAParse pp = new LCAParse();
+            pp.parseFile(lpo);
+        }
     }
 }

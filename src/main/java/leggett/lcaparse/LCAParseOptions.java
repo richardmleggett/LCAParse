@@ -51,10 +51,10 @@ public class LCAParseOptions {
         System.out.println("    -relative specifies the taxon ID of close relative species");
         System.out.println("");
         System.out.println("To create mapping file:");
-        System.out.println("    lcaparse -makemap -input <filename>");
+        System.out.println("    lcaparse -makemap -input <filename> -output <prefix> -taxonomy <directory>");
         System.out.println("Where:");
         System.out.println("    -input specifies the name of a nucl_gb.accession2taxid file");
-        System.out.println("    -output specifes the prefix for output files");
+        System.out.println("    -output specifes a prefix to use for output files");
         System.out.println("    -taxonomy specifies the directory containing NCBI taxonomy files");
         System.out.println("              (files needed are nodes.dmp and names.dmp)");
         System.out.println("");
@@ -114,7 +114,7 @@ public class LCAParseOptions {
                 }
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-makemap")) {
-                doingMakeMap = false;
+                doingMakeMap = true;
                 i++;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
@@ -141,11 +141,13 @@ public class LCAParseOptions {
             System.exit(1);
         }
         
-        if (doingMakeMap == false) {            
-            if (mapFilename == null) {
-                System.out.println("Error: you must specify a -mapfile parameter");
-                System.exit(1);
-            }        
+        if (doingMakeMap == false) {  
+            if ((fileFormat == FORMAT_BLASTTAB) || (fileFormat == FORMAT_PAF)) {
+                if (mapFilename == null) {
+                    System.out.println("Error: you must specify a -mapfile parameter");
+                    System.exit(1);
+                }        
+            }
         }
      }
     
@@ -214,5 +216,9 @@ public class LCAParseOptions {
         }
         
         return false;
+    }
+    
+    public boolean doingMakeMap() {
+        return doingMakeMap;
     }
 }

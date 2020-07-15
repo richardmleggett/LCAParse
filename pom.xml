@@ -23,6 +23,7 @@
                             <mainClass>leggett.lcaparse.LCAParse</mainClass>
                         </manifest>
                     </archive>
+                    <finalName>LCAParse</finalName>
                 </configuration>
             </plugin>
         </plugins>

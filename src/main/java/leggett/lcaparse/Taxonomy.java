@@ -53,6 +53,7 @@ public class Taxonomy {
     private int totalCountCheck = 0;
     private Rectangle bounds;
     private Hashtable<String, Integer> warningTaxa = new Hashtable();
+    private Hashtable<Long, Integer> warningTaxaId = new Hashtable();
     
     public Taxonomy(String nodesFilename, String namesFilename) {
         try {
@@ -595,7 +596,7 @@ public class Taxonomy {
                 } else {
                     Long parent = n.getParent();
                     if (n == null) {
-                        System.out.println("WARNING: " + currentTaxon + " doesn't have a node");
+                        System.out.println("WARNING: getGenus " + currentTaxon + " doesn't have a node");
                         failed = true;
                     } else {
                         if (parent == null) {
@@ -629,7 +630,7 @@ public class Taxonomy {
             TaxonomyNode n = this.getNodeFromTaxonId(currentTaxon);
             
             if (n == null) {
-                System.out.println("WARNING: " + currentTaxon + " doesn't have a node");
+                warnTaxaId(currentTaxon, "In isTaxonAncestor, taxon doesn't have a node defined: ");
                 failed = true;
             } else {
                 Long parent = n.getParent();
@@ -656,6 +657,13 @@ public class Taxonomy {
         if (!warningTaxa.containsKey(ascession)) {
             warningTaxa.put(ascession, 1);
             //System.out.println("Warning: couldn't find taxon for "+ascession);
+        }
+    }
+
+    public void warnTaxaId(long taxaId, String warningText) {
+        if (!warningTaxaId.containsKey(taxaId)) {
+            warningTaxaId.put(taxaId, 1);
+            System.out.println("Warning: " + warningText + " " + taxaId);
         }
     }
 }
