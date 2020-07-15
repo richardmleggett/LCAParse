@@ -60,3 +60,17 @@ The output file consists of four tab separated columns:
 -  Percentage of all reads
 -  Taxon ID
 -  Taxon path
+
+Input formats
+-------------
+The 'blasttab' input file format is achieved using the Blast option::
+
+  -outfmt 6
+
+The 'blasttaxon' format includes an additional taxa ID field and can be achieved using::
+
+  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids'
+
+The 'nanook' input file format also includes the subject title field:
+
+  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids' 

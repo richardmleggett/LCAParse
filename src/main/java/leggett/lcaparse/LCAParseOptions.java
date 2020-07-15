@@ -15,6 +15,7 @@ public class LCAParseOptions {
     public final static int FORMAT_PAF = 1;
     public final static int FORMAT_NANOOK = 2;
     public final static int FORMAT_BLASTTAB = 3;
+    public final static int FORMAT_BLASTTAXON = 4;
     private String inputFilename = null;
     private String outputFilename = null;
     private String taxonomyDirectory = null;
@@ -42,7 +43,7 @@ public class LCAParseOptions {
         System.out.println("    -taxonomy specifies the directory containing NCBI taxonomy files");
         System.out.println("              (files needed are nodes.dmp and names.dmp)");
         System.out.println("    -mapfile specifies the location of an accession to taxon ID mapping file");
-        System.out.println("    -format specifies input file format - either 'nanook', 'blasttab' or 'PAF'");
+        System.out.println("    -format specifies input file format - either 'nanook', 'blasttab', 'blasttaxon' or 'PAF'");
         System.out.println("    -maxhits specifies maximum number of hits to consider for given read (default 20)");
         System.out.println("    -scorepercent specifies minimum score threshold as percentage of top score for given read (default 90)");
         System.out.println("    -limitspecies limits taxonomy to species level (default: off)");
@@ -108,6 +109,8 @@ public class LCAParseOptions {
                     fileFormat = FORMAT_BLASTTAB;
                 } else if (args[i+1].equalsIgnoreCase("paf")) {
                     fileFormat = FORMAT_PAF;
+                } else if (args[i+1].equalsIgnoreCase("blasttaxon")) {
+                    fileFormat = FORMAT_BLASTTAXON;
                 } else {
                     System.out.println("Unknown file format: "+args[i+1]);
                     System.exit(1);

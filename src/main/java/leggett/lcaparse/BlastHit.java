@@ -36,7 +36,8 @@ public class BlastHit implements LCAHit {
         
         if (format == LCAParseOptions.FORMAT_NANOOK) {
             parseNanoOK(fields);
-        } else if (format == LCAParseOptions.FORMAT_BLASTTAB) {
+        } else if ((format == LCAParseOptions.FORMAT_BLASTTAB) ||
+                   (format == LCAParseOptions.FORMAT_BLASTTAXON)) {
             parseBlastTab(fields);
         }
                 
@@ -100,7 +101,17 @@ public class BlastHit implements LCAHit {
             targetEnd = Integer.parseInt(fields[9]);
             eValue = Double.parseDouble(fields[10]);
             bitscore = Double.parseDouble(fields[11]);
-            taxonId = accTaxConvert.getTaxonFromAccession(targetName);       
+            
+            if (fields.length == 13) {
+                taxonId = Integer.parseInt(fields[12]);
+            } else {
+                if (accTaxConvert != null) {
+                    taxonId = accTaxConvert.getTaxonFromAccession(targetName);       
+                } else {
+                    System.out.println("Error: you haven't specified a mapfile and the input file doesn't have taxon IDs");
+                    System.exit(1);                
+                }
+            }
         } else {
             System.out.println("Error: input format doesn't seem to be BlastTab");
             System.exit(1);
