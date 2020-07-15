@@ -1,24 +1,28 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
-/**
- *
- * @author leggettr
- */
 public class LCAParse {    
     public void parseFile(LCAParseOptions options) {
+        AccessionTaxonConvertor atc = null;
+        
         System.out.println("");
         System.out.println("LCAParse "+LCAParseOptions.version);
         System.out.println("");        
  
         Taxonomy taxonomy = new Taxonomy(options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         options.displayMemory();
-        AccessionTaxonConvertor atc = new AccessionTaxonConvertor();
-        atc.readMapFile(options.getMapFilename(), true);
+        
+        if (options.requiresAccessionMapping()) {
+            atc = new AccessionTaxonConvertor();
+            atc.readMapFile(options.getMapFilename(), true);
+        }
+        
         options.displayMemory();
         LCAFileParser pfp = new LCAFileParser(taxonomy, options, atc);        
                 

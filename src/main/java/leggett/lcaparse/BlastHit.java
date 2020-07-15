@@ -1,16 +1,14 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
 import java.util.ArrayList;
 
-/**
- *
- * @author leggettr
- */
 public class BlastHit implements LCAHit {
     private Taxonomy taxonomy;
     private AccessionTaxonConvertor accTaxConvert;
@@ -30,21 +28,29 @@ public class BlastHit implements LCAHit {
     private long taxonId = -1;
     private ArrayList<Long> taxonIdPath;
     
-    public BlastHit(Taxonomy t, AccessionTaxonConvertor atc, String line, boolean isNanoOK) {
+    public BlastHit(Taxonomy t, AccessionTaxonConvertor atc, String line, int format) {
         String[] fields = line.split("\t");
-        
-        if (!isNanoOK) {
-            System.out.println("Haven't yet implemented plain BlastTab, just NanoOK format");
-            System.exit(1);
-        }
-        
+                
         taxonomy = t;
         accTaxConvert = atc;
         
-        
+        if (format == LCAParseOptions.FORMAT_NANOOK) {
+            parseNanoOK(fields);
+        } else if (format == LCAParseOptions.FORMAT_BLASTTAB) {
+            parseBlastTab(fields);
+        }
+                
+        if (taxonId == -1) {
+            taxonomy.warnTaxa(targetName);
+        } else {
+            cacheTaxonIdPath();
+        }        
+    }
+    
+    private void parseNanoOK(String[] fields) {
         //"qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids"
-        
-        if (fields.length >= 14) {        
+
+        if (fields.length == 14) {        
             queryName = fields[0];
             targetName = fields[1];
             identity = Double.parseDouble(fields[2]);
@@ -62,15 +68,43 @@ public class BlastHit implements LCAHit {
             String[] taxa = taxaString.split(";");
             taxonId = Integer.parseInt(taxa[0]);
         } else {
-            System.out.println("Couldn't split "+line);
+            System.out.println("Error: input format doesn't seem to be NanoOK");
             System.exit(1);
-        }       
-        
-        if (taxonId == -1) {
-            taxonomy.warnTaxa(targetName);
+        }
+    }
+
+    private void parseBlastTab(String[] fields) {
+        // 1.	 qseqid	 query (e.g., unknown gene) sequence id
+        // 2.	 sseqid	 subject (e.g., reference genome) sequence id
+        // 3.	 pident	 percentage of identical matches
+        // 4.	 length	 alignment length (sequence overlap)
+        // 5.	 mismatch	 number of mismatches
+        // 6.	 gapopen	 number of gap openings
+        // 7.	 qstart	 start of alignment in query
+        // 8.	 qend	 end of alignment in query
+        // 9.	 sstart	 start of alignment in subject
+        // 10.	 send	 end of alignment in subject
+        // 11.	 evalue	 expect value
+        // 12.	 bitscore	 bit score
+
+        if (fields.length >= 12) {        
+            queryName = fields[0];
+            targetName = fields[1];
+            identity = Double.parseDouble(fields[2]);
+            length = Integer.parseInt(fields[3]);
+            mismatches = Integer.parseInt(fields[4]);
+            // gapopen            
+            queryStart = Integer.parseInt(fields[6]);
+            queryEnd = Integer.parseInt(fields[7]);
+            targetStart = Integer.parseInt(fields[8]);
+            targetEnd = Integer.parseInt(fields[9]);
+            eValue = Double.parseDouble(fields[10]);
+            bitscore = Double.parseDouble(fields[11]);
+            taxonId = accTaxConvert.getTaxonFromAccession(targetName);       
         } else {
-            cacheTaxonIdPath();
-        }        
+            System.out.println("Error: input format doesn't seem to be BlastTab");
+            System.exit(1);
+        }
     }
     
     public String getQueryName() {

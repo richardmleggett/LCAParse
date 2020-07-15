@@ -1,8 +1,10 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
 import java.io.BufferedReader;
@@ -18,10 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-/**
- *
- * @author leggettr
- */
 public class LCAFileParser {
     private Hashtable<String, Integer> countPerTarget = new Hashtable<String, Integer>();
     private Hashtable<String, LCAHitSet> hitsByQuery = new Hashtable<String, LCAHitSet>();
@@ -51,10 +49,10 @@ public class LCAFileParser {
         
         if (options.getFileFormat() == LCAParseOptions.FORMAT_PAF) {
             hit = new PAFHit(t, atc, line);
-        } else if (options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) {
-            hit = new BlastHit(t, atc, line, true);
-        } else if (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) {
-            hit = new BlastHit(t, atc, line, false);
+        } else if ((options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) ||
+                   (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB))
+        {
+            hit = new BlastHit(t, atc, line, options.getFileFormat());
         }
          
         return hit;

@@ -1,8 +1,10 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
 import java.io.BufferedReader;
@@ -10,10 +12,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
-/**
- *
- * @author leggettr
- */
 public class AccessionMapFilter {
     private Taxonomy taxonomy;
     

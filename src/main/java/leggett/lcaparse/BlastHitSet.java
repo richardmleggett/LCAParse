@@ -1,16 +1,14 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
 import java.util.ArrayList;
 
-/**
- *
- * @author leggettr
- */
 public class BlastHitSet implements LCAHitSet{    
     private String queryName;
     private ArrayList<LCAHit> alignments = new ArrayList<LCAHit>();

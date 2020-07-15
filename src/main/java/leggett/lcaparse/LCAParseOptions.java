@@ -1,17 +1,15 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-/**
- *
- * @author leggettr
- */
 public class LCAParseOptions {
     public final static int FORMAT_UNKNOWN = 0;
     public final static int FORMAT_PAF = 1;
@@ -208,4 +206,13 @@ public class LCAParseOptions {
         System.out.println(" Free memory: "+ (Runtime.getRuntime().freeMemory() / (1024*1024)) + " Mb");
         System.out.println(" Used memory: "+ ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024*1024)) + " Mb");
     }    
+    
+    public boolean requiresAccessionMapping() {
+        if ((fileFormat == FORMAT_PAF) ||
+            (fileFormat == FORMAT_BLASTTAB)) {
+            return true;
+        }
+        
+        return false;
+    }
 }

@@ -1,18 +1,16 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
  */
+
 package leggett.lcaparse;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Hashtable;
 
-/**
- *
- * @author leggettr
- */
 public class AccessionTaxonConvertor {
     private Hashtable<String, Long> accessionToTaxon = new Hashtable();
     int count = 0;

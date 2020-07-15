@@ -1,3 +1,10 @@
+/*
+ * Program: LCAParse
+ * Author:  Richard M. Leggett
+ * 
+ * Copyright 2020 Earlham Institute
+ */
+
 package leggett.lcaparse;
 
 import java.awt.Color;
