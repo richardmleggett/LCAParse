@@ -71,6 +71,6 @@ The 'blasttaxon' format includes an additional taxa ID field and can be achieved
 
   -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids'
 
-The 'nanook' input file format also includes the subject title field:
+The 'nanook' input file format also includes the subject title field::
 
   -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids' 
