@@ -53,3 +53,10 @@ Other options:
 -  ``-maxhits`` specifies maximum number of hits to consider for given read (default 20)
 -  ``-scorepercent`` specifies minimum score threshold as percentage of top score for given read (default 90)
 -  ``-limitspecies`` limits taxonomy to species level (i.e. not strain)
+
+The output file consists of four tab separated columns:
+
+-  Read count
+-  Percentage of all reads
+-  Taxon ID
+-  Taxon path
