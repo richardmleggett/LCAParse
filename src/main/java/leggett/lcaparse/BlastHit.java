@@ -41,7 +41,7 @@ public class BlastHit implements LCAHit {
             parseBlastTab(fields);
         }
                 
-        if (taxonId == -1) {
+        if (taxonId == -1) {            
             taxonomy.warnTaxa(targetName);
         } else {
             cacheTaxonIdPath();
@@ -103,7 +103,9 @@ public class BlastHit implements LCAHit {
             bitscore = Double.parseDouble(fields[11]);
             
             if (fields.length == 13) {
-                taxonId = Integer.parseInt(fields[12]);
+                String taxaString = fields[12];
+                String[] taxa = taxaString.split(";");
+                taxonId = Integer.parseInt(taxa[0]);
             } else {
                 if (accTaxConvert != null) {
                     taxonId = accTaxConvert.getTaxonFromAccession(targetName);       
@@ -159,8 +161,10 @@ public class BlastHit implements LCAHit {
         
     // Note level is 1-offset
     public long getTaxonNode(int level) {
-        if (level <= taxonIdPath.size()) {
-            return taxonIdPath.get(taxonIdPath.size() - level);
+        if (taxonIdPath != null) {
+            if (level <= taxonIdPath.size()) {
+                return taxonIdPath.get(taxonIdPath.size() - level);
+            }
         }
         return 0;
     }    

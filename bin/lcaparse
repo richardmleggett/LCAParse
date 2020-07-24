@@ -4,7 +4,7 @@
 JARFILE=/Users/leggettr/Documents/github/LCAParse/target/LCAParse.jar
 
 # You may need to increase this in some circumstances
-JAVA_ARGS="-Xmx2048m"
+JAVA_ARGS="-Xmx4096m"
 
 if [ ! -f ${JARFILE} ] ; then
     echo "Error: Can't find LCAParse.jar - you may need to move it or update the lcaparse script"

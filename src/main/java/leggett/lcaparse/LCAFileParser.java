@@ -50,9 +50,13 @@ public class LCAFileParser {
         if (options.getFileFormat() == LCAParseOptions.FORMAT_PAF) {
             hit = new PAFHit(t, atc, line);
         } else if ((options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) ||
-                   (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB))
+                   (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) || 
+                   (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAXON))
         {
             hit = new BlastHit(t, atc, line, options.getFileFormat());
+        } else {
+            System.out.println("Error in crerateNewHit - unexpected format\n");
+            System.exit(1);
         }
          
         return hit;
@@ -63,10 +67,14 @@ public class LCAFileParser {
         
         if (options.getFileFormat() == LCAParseOptions.FORMAT_PAF) {
             hs = new PAFHitSet(query);
-        } else if (options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) {
+        } else if ((options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) ||
+                   (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) ||
+                   (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAXON))
+        {
             hs = new BlastHitSet(query, options);
-        } else if (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) {
-            hs = new BlastHitSet(query, options);
+        } else {
+            System.out.println("Error in crerateNewHitSet - unexpected format\n");
+            System.exit(1);
         }
                 
         return hs;

@@ -15,7 +15,7 @@ public class LCAParse {
         System.out.println("LCAParse "+LCAParseOptions.version);
         System.out.println("");        
  
-        Taxonomy taxonomy = new Taxonomy(options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+        Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         options.displayMemory();
         
         if (options.requiresAccessionMapping()) {
@@ -43,7 +43,7 @@ public class LCAParse {
     }
     
     public void makeMapFile(LCAParseOptions options) {
-        Taxonomy taxonomy = new Taxonomy(options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+        Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         AccessionMapFilter amf = new AccessionMapFilter(taxonomy);
         amf.filterMapFile(options.getInputFilename(),options.getOutputFilename());
     }

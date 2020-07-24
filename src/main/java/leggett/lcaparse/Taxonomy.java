@@ -27,10 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Taxonomy {
-    private int circleDiameter = 32;
-    private int circleRadius = circleDiameter / 2;
-    private final static int rowHeight = 32;
-    private final static int colWidth = 50;
+    private LCAParseOptions options;
     private Hashtable<Long, TaxonomyNode> nodesById = new Hashtable();
     private Hashtable<Long, String> nameById = new Hashtable();
     private Hashtable<String, Long> idByName = new Hashtable();
@@ -55,7 +52,8 @@ public class Taxonomy {
     private Hashtable<String, Integer> warningTaxa = new Hashtable();
     private Hashtable<Long, Integer> warningTaxaId = new Hashtable();
     
-    public Taxonomy(String nodesFilename, String namesFilename) {
+    public Taxonomy(LCAParseOptions o, String nodesFilename, String namesFilename) {
+        options = o;
         try {
             System.out.println("Reading "+nodesFilename);
             BufferedReader br = new BufferedReader(new FileReader(nodesFilename));
@@ -654,16 +652,20 @@ public class Taxonomy {
     }
     
     public void warnTaxa(String ascession) {
-        if (!warningTaxa.containsKey(ascession)) {
-            warningTaxa.put(ascession, 1);
-            //System.out.println("Warning: couldn't find taxon for "+ascession);
+        if (options.showWarnings()) {
+            if (!warningTaxa.containsKey(ascession)) {
+                warningTaxa.put(ascession, 1);
+                System.out.println("Warning: couldn't find taxon for "+ascession);
+            }
         }
     }
 
     public void warnTaxaId(long taxaId, String warningText) {
-        if (!warningTaxaId.containsKey(taxaId)) {
-            warningTaxaId.put(taxaId, 1);
-            System.out.println("Warning: " + warningText + " " + taxaId);
+        if (options.showWarnings()) {
+            if (!warningTaxaId.containsKey(taxaId)) {
+                warningTaxaId.put(taxaId, 1);
+                System.out.println("Warning: " + warningText + " " + taxaId);
+            }
         }
     }
 }

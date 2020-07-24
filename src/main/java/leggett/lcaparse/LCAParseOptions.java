@@ -21,13 +21,14 @@ public class LCAParseOptions {
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.1";
+    public final static String version="v0.3";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
     private boolean limitToSpecies = false;
     private long expectedTaxon = 0;
     private long relatedTaxon = 0;
     private boolean doingMakeMap = false;
+    private boolean withWarnings = false;
     
     public void displayHelp() {
         System.out.println("");
@@ -50,6 +51,7 @@ public class LCAParseOptions {
         System.out.println("Analysis options:");
         System.out.println("    -expected specifies the taxon ID of expected species");
         System.out.println("    -relative specifies the taxon ID of close relative species");
+        System.out.println("    -warnings turns on warning messages");
         System.out.println("");
         System.out.println("To create mapping file:");
         System.out.println("    lcaparse -makemap -input <filename> -output <prefix> -taxonomy <directory>");
@@ -69,7 +71,7 @@ public class LCAParseOptions {
         int i = 0;
         
         while (i < (args.length)) {
-            if (args[i].equalsIgnoreCase("-help")) {
+            if ((args[i].equalsIgnoreCase("-help")) || (args[i].equalsIgnoreCase("-h"))) {
                 displayHelp();
                 System.exit(0);
             } else if (args[i].equalsIgnoreCase("-input")) {
@@ -101,6 +103,9 @@ public class LCAParseOptions {
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-limitspecies")) {
                 limitToSpecies = true;
+                i++;
+            } else if (args[i].equalsIgnoreCase("-warnings")) {
+                withWarnings = true;
                 i++;
             } else if (args[i].equalsIgnoreCase("-format")) {
                 if (args[i+1].equalsIgnoreCase("nanook")) {
@@ -223,5 +228,9 @@ public class LCAParseOptions {
     
     public boolean doingMakeMap() {
         return doingMakeMap;
+    }
+    
+    public boolean showWarnings() {
+        return withWarnings;
     }
 }
