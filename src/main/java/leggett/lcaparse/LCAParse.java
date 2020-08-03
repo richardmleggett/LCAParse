@@ -28,7 +28,7 @@ public class LCAParse {
                 
         System.out.println("Parsing...");
         pfp.parseFile(options.getInputFilename());
-        pfp.writeResults(options.getOutputFilename());
+        pfp.writeResults(options.getTaxaSummaryOutputFilename(), options.getPerReadOutputFilename());
         System.out.println("");
         System.out.println("Done");
         System.out.println("");
@@ -45,7 +45,7 @@ public class LCAParse {
     public void makeMapFile(LCAParseOptions options) {
         Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         AccessionMapFilter amf = new AccessionMapFilter(taxonomy);
-        amf.filterMapFile(options.getInputFilename(),options.getOutputFilename());
+        amf.filterMapFile(options.getInputFilename(),options.getOutputPrefix());
     }
 
     public static void main(String[] args) {

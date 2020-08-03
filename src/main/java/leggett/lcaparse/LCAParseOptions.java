@@ -17,11 +17,11 @@ public class LCAParseOptions {
     public final static int FORMAT_BLASTTAB = 3;
     public final static int FORMAT_BLASTTAXON = 4;
     private String inputFilename = null;
-    private String outputFilename = null;
+    private String outputPrefix = null;
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.3";
+    public final static String version="v0.4";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
     private boolean limitToSpecies = false;
@@ -36,11 +36,11 @@ public class LCAParseOptions {
         System.out.println("Comments/queries: richard.leggett@earlham.ac.uk");
         System.out.println("");
         System.out.println("To parse:");
-        System.out.println("    lcaparse [-input <filename>|-inputlist <filename>] -output <filename> -taxonomy <directory> -mapfile <filename> -format <string>");
+        System.out.println("    lcaparse [-input <filename>|-inputlist <filename>] -output <prefix> -taxonomy <directory> -mapfile <filename> -format <string>");
         System.out.println("Where:");
         System.out.println("    -input specifies the name of an input file to parse");
         System.out.println("    -inputlist specifies a file of filenames of input files to parse");
-        System.out.println("    -output specifies the output filename");
+        System.out.println("    -output specifies the output filename prefix");
         System.out.println("    -taxonomy specifies the directory containing NCBI taxonomy files");
         System.out.println("              (files needed are nodes.dmp and names.dmp)");
         System.out.println("    -mapfile specifies the location of an accession to taxon ID mapping file");
@@ -81,7 +81,7 @@ public class LCAParseOptions {
                 System.out.println("Inputlist not yet implemented");
                 System.exit(1);
             } else if (args[i].equalsIgnoreCase("-output")) {
-                outputFilename = args[i+1];
+                outputPrefix = args[i+1];
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-taxonomy")) {
                 taxonomyDirectory = args[i+1];
@@ -139,7 +139,7 @@ public class LCAParseOptions {
             System.out.println("Error: you must specify a -input parameter");
             System.exit(1);
         }
-        if (outputFilename == null) {
+        if (outputPrefix == null) {
             System.out.println("Error: you must specify a -output parameter");
             System.exit(1);
         }
@@ -163,8 +163,16 @@ public class LCAParseOptions {
         return inputFilename;
     }
     
-    public String getOutputFilename() {
-        return outputFilename;
+    public String getOutputPrefix() {
+        return outputPrefix;
+    }
+    
+    public String getTaxaSummaryOutputFilename() {
+        return outputPrefix+"_summary.txt";
+    }
+
+    public String getPerReadOutputFilename() {
+        return outputPrefix+"_perread.txt";
     }
     
     public String getTaxonomyDirectory() {

@@ -120,24 +120,38 @@ public class LCAFileParser {
         }
     }
     
-    public void writeResults(String filename) {
+    public void writeResults(String summaryFilename, String perReadFilename) {
         int totalCount = 0;
         int unknownTaxaCount = 0;
         Set<String> keys = hitsByQuery.keySet();
-        for (String queryName : keys) {
-            LCAHitSet hs = hitsByQuery.get(queryName);
-            if (hs.hasUnknownTaxa()) {
-                unknownTaxaCount++;
+        
+        try {
+            System.out.println("Writing "+perReadFilename);
+            PrintWriter pwPerRead = new PrintWriter(new FileWriter(perReadFilename));
+            
+            for (String queryName : keys) {
+                LCAHitSet hs = hitsByQuery.get(queryName);
+                if (hs.hasUnknownTaxa()) {
+                    unknownTaxaCount++;
+                }
+                long ancestor = taxonomy.findAncestor(hs, options.getMaxHitsToConsider(), options.limitToSpecies());
+                int count = 0;
+                if (countsPerTaxon.containsKey(ancestor)) {
+                    count = countsPerTaxon.get(ancestor);
+                }
+                count++;
+                countsPerTaxon.put(ancestor, count);
+                totalCount++;
+                
+                pwPerRead.println(queryName + "\t" + ancestor + "\t" + taxonomy.getNameFromTaxonId(ancestor));
             }
-            long ancestor = taxonomy.findAncestor(hs, options.getMaxHitsToConsider(), options.limitToSpecies());
-            int count = 0;
-            if (countsPerTaxon.containsKey(ancestor)) {
-                count = countsPerTaxon.get(ancestor);
-            }
-            count++;
-            countsPerTaxon.put(ancestor, count);
-            totalCount++;
-        }
+            
+            pwPerRead.close();
+        } catch (Exception e) {
+            System.out.println("readProcessFile Exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }        
         
         // Sort
         List<Map.Entry<Long, Integer>> list = new ArrayList<Entry<Long, Integer>>(countsPerTaxon.entrySet());
@@ -152,7 +166,7 @@ public class LCAFileParser {
             System.out.println("Warning: "+unknownTaxaCount + " reads with unknown taxa");
         }
         
-        System.out.println("Writing "+filename);
+        System.out.println("Writing "+summaryFilename);
         // Write
         int expectedCount = 0;
         int relativeCount = 0;
@@ -169,7 +183,7 @@ public class LCAFileParser {
         }
         
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(filename));
+            PrintWriter pw = new PrintWriter(new FileWriter(summaryFilename));
             Set<Long> allTaxon = countsPerTaxon.keySet();
             //for (Long taxon : allTaxon) {
             //    pw.println(taxon + "\t" + countsPerTaxon.get(taxon));

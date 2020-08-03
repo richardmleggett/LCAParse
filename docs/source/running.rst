@@ -38,12 +38,12 @@ Running LCAParse
 
 To run, type a command of the form::
 
-  lcaparse -input filename.txt -output output.txt -taxonomy /path/to/taxonomy/dir -mapfile /path/to/mapfile.txt -format blasttab
+  lcaparse -input filename.txt -output /path/to/output_prefix -taxonomy /path/to/taxonomy/dir -mapfile /path/to/mapfile.txt -format blasttab
 
 where:
 
 -  ``-input`` specifies the name of an input Blast or minimap2 file
--  ``-output`` specifies the name of an output file for LCA results
+-  ``-output`` specifies the prefix for output LCA results. Two files will be generated - a output_summary.txt and an output_perread.txt.
 -  ``-taxonomy`` specifies the directory containing NCBI taxonomy files (files needed are nodes.dmp and names.dmp)
 -  ``-format`` specifies the input file format - either 'nanook', 'blasttab' or 'PAF'.
 -  ``-mapfile`` specifies the name of an accession map file created as detailed above. This is needed for blasttab and PAF format files.
@@ -55,12 +55,18 @@ Other options:
 -  ``-limitspecies`` limits taxonomy to species level (i.e. not strain)
 -  ``-warnings`` will show warnings for missing accession IDs and taxa
 
-The output file consists of four tab separated columns:
+The summary output file consists of four tab separated columns:
 
 -  Read count
 -  Percentage of all reads
 -  Taxon ID
 -  Taxon path
+
+The per read output file consists of three tab separate columns:
+
+-  Read ID
+-  Taxon ID
+-  Taxon name
 
 Input formats
 -------------
