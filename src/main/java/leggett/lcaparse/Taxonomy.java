@@ -25,9 +25,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Taxonomy {
     private LCAParseOptions options;
+    private String nodesFilename;
     private Hashtable<Long, TaxonomyNode> nodesById = new Hashtable();
     private Hashtable<Long, String> nameById = new Hashtable();
     private Hashtable<String, Long> idByName = new Hashtable();
@@ -51,8 +53,12 @@ public class Taxonomy {
     private Rectangle bounds;
     private Hashtable<String, Integer> warningTaxa = new Hashtable();
     private Hashtable<Long, Integer> warningTaxaId = new Hashtable();
+    private Hashtable<String, Integer> warningRank = new Hashtable();
+    private Hashtable<Long, TaxonomyRank> taxonIdToRank = new Hashtable();
+    private Hashtable<String, TaxonomyRank> ranksTable = new Hashtable();
     
-    public Taxonomy(LCAParseOptions o, String nodesFilename, String namesFilename) {
+    public Taxonomy(LCAParseOptions o, String nf, String namesFilename) {
+        nodesFilename = nf;
         options = o;
         try {
             System.out.println("Reading "+nodesFilename);
@@ -63,6 +69,7 @@ public class Taxonomy {
                 long id = Long.parseLong(fields[0]);
                 long parentId = Integer.parseInt(fields[2]);
                 String rank = fields[4];
+                
                 TaxonomyNode n = nodesById.get(id);
                 
                 if (n == null) {               
@@ -70,7 +77,7 @@ public class Taxonomy {
                     nodesById.put(id, n);
                 }
                 
-                n.setRank(rank);
+                n.setRank(this, rank);
                 
                 if (parentId != id) {
                     n.setParent(parentId);   
@@ -156,6 +163,113 @@ public class Taxonomy {
         
         //System.out.println("Enterobacter aerogenes = " + this.getTaxonIdFromName("Enterobacter aerogenes"));
         //System.out.println("" + );
+    }
+    
+    public void discernRanks() {
+
+        try {
+            // Read first time
+            System.out.println("Reading "+nodesFilename);
+            BufferedReader br = new BufferedReader(new FileReader(nodesFilename));
+            String line;
+            int count = 0;
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split("\t");                
+                long id = Long.parseLong(fields[0]);
+                long parentId = Integer.parseInt(fields[2]);
+                String rank = fields[4];
+                
+                TaxonomyRank tr;
+                if (ranksTable.containsKey(rank)) {
+                    tr = ranksTable.get(rank);
+                } else {
+                    tr = new TaxonomyRank(rank);
+                    ranksTable.put(rank, tr);
+                    System.out.println("Put rank "+rank);
+                }
+                
+                taxonIdToRank.put(id, tr);
+ 
+                count++;                
+                if ((count % 1000000) == 0) {
+                    System.out.println("Read "+count+" entries");
+                }
+            }
+            br.close();
+                
+            // Read second time
+            System.out.println("Reading "+nodesFilename);
+            br = new BufferedReader(new FileReader(nodesFilename));               
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split("\t");                
+                long id = Long.parseLong(fields[0]);
+                long parentId = Integer.parseInt(fields[2]);
+                String rank = fields[4];
+                
+                if (!ranksTable.containsKey(rank)) {
+                    System.out.println("Error: not seen rank before");
+                    System.exit(1);
+                }
+                                
+                TaxonomyNode n = getNodeFromTaxonId(parentId);                
+                if (n != null) {
+                    TaxonomyRank thisTr = ranksTable.get(rank);
+                    TaxonomyRank parentTr = taxonIdToRank.get(n.getId());
+                    if (rank.compareTo("no rank") != 0) {
+                        if (thisTr != parentTr) {
+                            thisTr.addParent(parentTr);
+                            parentTr.addChild(thisTr);
+                        }
+                        
+                    }
+                } else {
+                    System.out.println("No node for parent "+parentId);
+                }
+            }
+            br.close();
+            
+            System.out.println("Done");
+        } catch (Exception e) {
+            System.out.println("Taxonomy exception");
+            e.printStackTrace();
+            System.exit(1);
+        }
+        
+        Set<String> keys = ranksTable.keySet();
+        for (String key: keys) {
+            TaxonomyRank tr = ranksTable.get(key);
+            System.out.println("\nParents of "+tr.getName()+" are");
+            for (int i = 0; i<tr.getNumnberOfParents(); i++) {
+                TaxonomyRank parent = tr.getParent(i);
+                System.out.println("\t"+parent.getName());
+            }
+            System.out.println("\nChildren of "+tr.getName()+" are");
+            for (int i = 0; i<tr.getNumberOfChildren(); i++) {
+                TaxonomyRank child = tr.getChild(i);
+                System.out.println("\t"+child.getName());
+            }
+        }        
+        
+        //System.out.println("\n\nTaxonomy is:\n");
+        //TaxonomyRank tr = ranksTable.get("superkingdom");
+        //printTaxonomyRank(tr, 0);      
+    }
+    
+    public void printTaxonomyRank(TaxonomyRank tr, int level) {       
+        if (tr != null) {
+            for (int i=0; i<level; i++) {
+                System.out.print(" ");
+            }
+            System.out.println(tr.getName() + "\t" + tr.getNumnberOfParents() + "\t" + tr.getNumberOfChildren());
+            
+            tr.markVisited();
+            
+            for (int j=0; j<tr.getNumberOfChildren(); j++) {
+                if (tr.getChild(j).isVisited() == false) {
+                    printTaxonomyRank(tr.getChild(j), level+1);
+                }
+            }
+        }
     }
     
     public void outputTaxonIdsFromNode(long id, String filename) {
@@ -665,6 +779,15 @@ public class Taxonomy {
             if (!warningTaxaId.containsKey(taxaId)) {
                 warningTaxaId.put(taxaId, 1);
                 System.out.println("Warning: " + warningText + " " + taxaId);
+            }
+        }
+    }
+    
+    public void warnRank(String s) {
+        if (options.showWarnings()) {
+            if (!warningRank.containsKey(s)) {
+                warningRank.put(s, 1);
+                System.out.println("Warning: unknown rank "+s);
             }
         }
     }

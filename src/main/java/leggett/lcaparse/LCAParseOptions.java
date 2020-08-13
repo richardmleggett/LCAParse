@@ -21,13 +21,14 @@ public class LCAParseOptions {
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.4";
+    public final static String version="v0.5";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
     private boolean limitToSpecies = false;
     private long expectedTaxon = 0;
     private long relatedTaxon = 0;
     private boolean doingMakeMap = false;
+    private boolean doingRanks = false;
     private boolean withWarnings = false;
     
     public void displayHelp() {
@@ -61,9 +62,8 @@ public class LCAParseOptions {
         System.out.println("    -taxonomy specifies the directory containing NCBI taxonomy files");
         System.out.println("              (files needed are nodes.dmp and names.dmp)");
         System.out.println("");
-        System.out.println("To do:");
-        System.out.println("    - Implement makemap option");
-        System.out.println("    - Implement blasttab option");
+        System.out.println("To view taxonomy ranks:");
+        System.out.println("    lcaparse -ranks -taxonomy <directory>");
         System.out.println("");
     }
     
@@ -124,6 +124,9 @@ public class LCAParseOptions {
             } else if (args[i].equalsIgnoreCase("-makemap")) {
                 doingMakeMap = true;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-ranks")) {
+                doingRanks = true;
+                i++;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
                 System.exit(1);
@@ -135,18 +138,20 @@ public class LCAParseOptions {
             System.exit(0);
         }
         
-        if (inputFilename == null) {
-            System.out.println("Error: you must specify a -input parameter");
-            System.exit(1);
-        }
-        if (outputPrefix == null) {
-            System.out.println("Error: you must specify a -output parameter");
-            System.exit(1);
-        }
+        if (doingRanks == false) {
+            if (inputFilename == null) {
+                System.out.println("Error: you must specify a -input parameter");
+                System.exit(1);
+            }
+            if (outputPrefix == null) {
+                System.out.println("Error: you must specify a -output parameter");
+                System.exit(1);
+            }
 
-        if (taxonomyDirectory == null) {
-            System.out.println("Error: you must specify a -taxonomy parameter");
-            System.exit(1);
+            if (taxonomyDirectory == null) {
+                System.out.println("Error: you must specify a -taxonomy parameter");
+                System.exit(1);
+            }
         }
         
         if (doingMakeMap == false) {  
@@ -236,6 +241,10 @@ public class LCAParseOptions {
     
     public boolean doingMakeMap() {
         return doingMakeMap;
+    }
+    
+    public boolean doingRanks() {
+        return doingRanks;
     }
     
     public boolean showWarnings() {

@@ -143,7 +143,13 @@ public class LCAFileParser {
                 countsPerTaxon.put(ancestor, count);
                 totalCount++;
                 
-                pwPerRead.println(queryName + "\t" + ancestor + "\t" + taxonomy.getNameFromTaxonId(ancestor));
+                String ancestorRank = "";
+                TaxonomyNode n = taxonomy.getNodeFromTaxonId(ancestor);
+                if (n != null) {
+                    ancestorRank = n.getRankString();
+                }
+                
+                pwPerRead.println(queryName + "\t" + ancestor + "\t" + taxonomy.getNameFromTaxonId(ancestor)+ "\t" +ancestorRank);
             }
             
             pwPerRead.close();
@@ -194,8 +200,14 @@ public class LCAFileParser {
                 Long taxon = entry.getKey();
                 int count = countsPerTaxon.get(taxon);
                 double percent = (100 * (double)count) / (double)totalCount;
-                String taxonName = taxonomy.getTaxonomyStringFromId(taxon);
-                pw.printf("%d\t%.2f\t%d\t%s\n", count, percent, taxon, taxonName);
+                String taxonName = taxonomy.getTaxonomyStringFromId(taxon);                
+                String rank = "";
+                TaxonomyNode n = taxonomy.getNodeFromTaxonId(taxon);
+                if (n != null) {
+                    rank = n.getRankString();
+                }
+                
+                pw.printf("%d\t%.2f\t%d\t%s\t%s\n", count, percent, taxon, taxonName, rank);
                 //System.out.printf("%d\t%.2f\t%d\t%s\n", count, percent, taxon, taxonName);
                 
                 if (expectedTaxon > 0) {

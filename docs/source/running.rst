@@ -61,12 +61,14 @@ The summary output file consists of four tab separated columns:
 -  Percentage of all reads
 -  Taxon ID
 -  Taxon path
+-  Taxon rank
 
 The per read output file consists of three tab separate columns:
 
 -  Read ID
 -  Taxon ID
 -  Taxon name
+-  Taxon rank
 
 Input formats
 -------------

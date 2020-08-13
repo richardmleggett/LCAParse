@@ -47,12 +47,21 @@ public class LCAParse {
         AccessionMapFilter amf = new AccessionMapFilter(taxonomy);
         amf.filterMapFile(options.getInputFilename(),options.getOutputPrefix());
     }
+    
+    public void discernTaxonomy(LCAParseOptions options) {
+        Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+        options.displayMemory();
+        taxonomy.discernRanks();
+    }
 
     public static void main(String[] args) {
         LCAParseOptions lpo = new LCAParseOptions();
         lpo.processCommandLine(args);
 
-        if (lpo.doingMakeMap()) {
+        if (lpo.doingRanks()) {
+            LCAParse pp = new LCAParse();
+            pp.discernTaxonomy(lpo);
+        } else if (lpo.doingMakeMap()) {
             LCAParse pp = new LCAParse();
             pp.makeMapFile(lpo);
         } else {

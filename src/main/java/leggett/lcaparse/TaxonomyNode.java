@@ -117,7 +117,7 @@ public class TaxonomyNode<T> {
         return summarised;
     }
     
-    public void setRank(String s) {
+    public void setRank(Taxonomy taxonomy, String s) {
         switch(s) {
             case "class": rank=RANK_CLASS; break;
             case "cohort": rank=RANK_COHORT; break;
@@ -150,7 +150,7 @@ public class TaxonomyNode<T> {
             case "tribe": rank=RANK_TRIBE; break;
             case "varietas": rank=RANK_VARIETAS; break;
             default:
-                //System.out.println("Rank ["+s+"]");
+                taxonomy.warnRank(s);
                 rank=RANK_UNKNOWN;
                 break;
         }
