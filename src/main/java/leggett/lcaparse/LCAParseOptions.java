@@ -21,15 +21,28 @@ public class LCAParseOptions {
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.5";
+    public final static String version="v0.6";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
+    private double minIdentity = 0;
     private boolean limitToSpecies = false;
     private long expectedTaxon = 0;
     private long relatedTaxon = 0;
     private boolean doingMakeMap = false;
     private boolean doingRanks = false;
     private boolean withWarnings = false;
+    
+    public LCAParseOptions() {
+    }
+    
+    public LCAParseOptions(String taxonomyDir, String mapFile, String format, boolean limitSpecies, int maxHits, double scorePc) {
+        taxonomyDirectory = taxonomyDir;
+        mapFilename = mapFile;
+        processFormat(format);
+        limitToSpecies = limitSpecies;
+        maxHitsToConsider = maxHits;
+        scorePercent = scorePc;
+    }
     
     public void displayHelp() {
         System.out.println("");
@@ -48,6 +61,7 @@ public class LCAParseOptions {
         System.out.println("    -format specifies input file format - either 'nanook', 'blasttab', 'blasttaxon' or 'PAF'");
         System.out.println("    -maxhits specifies maximum number of hits to consider for given read (default 20)");
         System.out.println("    -scorepercent specifies minimum score threshold as percentage of top score for given read (default 90)");
+        System.out.println("    -minidentity specifies minimum identity % (default 0)");               
         System.out.println("    -limitspecies limits taxonomy to species level (default: off)");
         System.out.println("Analysis options:");
         System.out.println("    -expected specifies the taxon ID of expected species");
@@ -65,6 +79,21 @@ public class LCAParseOptions {
         System.out.println("To view taxonomy ranks:");
         System.out.println("    lcaparse -ranks -taxonomy <directory>");
         System.out.println("");
+    }
+    
+    public void processFormat(String format) {
+        if (format.equalsIgnoreCase("nanook")) {
+            fileFormat = FORMAT_NANOOK;
+        } else if (format.equalsIgnoreCase("blasttab")) {
+            fileFormat = FORMAT_BLASTTAB;
+        } else if (format.equalsIgnoreCase("paf")) {
+            fileFormat = FORMAT_PAF;
+        } else if (format.equalsIgnoreCase("blasttaxon")) {
+            fileFormat = FORMAT_BLASTTAXON;
+        } else {
+            System.out.println("Unknown file format: " + format);
+            System.exit(1);
+        }
     }
     
     public void processCommandLine(String[] args) {
@@ -101,6 +130,9 @@ public class LCAParseOptions {
             } else if (args[i].equalsIgnoreCase("-scorepercent")) {
                 scorePercent = Double.parseDouble(args[i+1]);
                 i+=2;
+            } else if (args[i].equalsIgnoreCase("-minidentity")) {
+                minIdentity = Double.parseDouble(args[i+1]);
+                i+=2;
             } else if (args[i].equalsIgnoreCase("-limitspecies")) {
                 limitToSpecies = true;
                 i++;
@@ -108,18 +140,7 @@ public class LCAParseOptions {
                 withWarnings = true;
                 i++;
             } else if (args[i].equalsIgnoreCase("-format")) {
-                if (args[i+1].equalsIgnoreCase("nanook")) {
-                    fileFormat = FORMAT_NANOOK;
-                } else if (args[i+1].equalsIgnoreCase("blasttab")) {
-                    fileFormat = FORMAT_BLASTTAB;
-                } else if (args[i+1].equalsIgnoreCase("paf")) {
-                    fileFormat = FORMAT_PAF;
-                } else if (args[i+1].equalsIgnoreCase("blasttaxon")) {
-                    fileFormat = FORMAT_BLASTTAXON;
-                } else {
-                    System.out.println("Unknown file format: "+args[i+1]);
-                    System.exit(1);
-                }
+                processFormat(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-makemap")) {
                 doingMakeMap = true;
@@ -200,6 +221,10 @@ public class LCAParseOptions {
         return scorePercent;
     }
     
+    public double getMinIdentity() {
+        return minIdentity;
+    }
+        
     public boolean limitToSpecies() {
         return limitToSpecies;
     }

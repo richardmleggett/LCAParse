@@ -42,8 +42,10 @@ public class BlastHitSet implements LCAHitSet{
                 }
             }
             
-            if (bh.getAlignmentScore() >= bitScoreThreshold) {
-                addAlignment = true;
+            if (bh.getAlignmentScore() >= bitScoreThreshold) {               
+                if (bh.getIdentity() >= options.getMinIdentity()) {
+                    addAlignment = true;
+                }
             }
         } else {
             addAlignment = true;

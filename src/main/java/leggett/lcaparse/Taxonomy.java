@@ -586,6 +586,8 @@ public class Taxonomy {
             int taxonLevel = bhs.getAlignment(i).getTaxonLevel();
 
             if (debug) {
+                System.out.print(i + " ");
+                System.out.print(bhs.getAlignment(i).getTaxonId() + " ");
                 System.out.print(this.getTaxonomyStringFromId(bhs.getAlignment(i).getTaxonId()));
                 System.out.println(" "+taxonLevel);
             }

@@ -62,6 +62,8 @@ public class AccessionTaxonConvertor {
         
         if (accessionToTaxon.containsKey(accession)) {
             r = accessionToTaxon.get(accession);
+        } else {
+            System.out.println("Can't find accession "+accession);
         }
         
         return r;
