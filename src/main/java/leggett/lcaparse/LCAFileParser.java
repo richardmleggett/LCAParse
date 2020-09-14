@@ -49,6 +49,8 @@ public class LCAFileParser {
         
         if (options.getFileFormat() == LCAParseOptions.FORMAT_PAF) {
             hit = new PAFHit(t, atc, line);
+        } else if (options.getFileFormat() == LCAParseOptions.FORMAT_SAM) {
+            hit = new SAMHit(t, atc, line);
         } else if ((options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) ||
                    (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) || 
                    (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAXON))
@@ -67,6 +69,8 @@ public class LCAFileParser {
         
         if (options.getFileFormat() == LCAParseOptions.FORMAT_PAF) {
             hs = new PAFHitSet(query);
+        } else if (options.getFileFormat() == LCAParseOptions.FORMAT_SAM) {
+            hs = new SAMHitSet(query);
         } else if ((options.getFileFormat() == LCAParseOptions.FORMAT_NANOOK) ||
                    (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) ||
                    (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAXON))

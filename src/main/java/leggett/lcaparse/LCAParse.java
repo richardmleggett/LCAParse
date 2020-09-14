@@ -7,6 +7,11 @@
 
 package leggett.lcaparse;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 public class LCAParse {    
     public void parseFile(LCAParseOptions options) {
         AccessionTaxonConvertor atc = null;
@@ -53,6 +58,38 @@ public class LCAParse {
         options.displayMemory();
         taxonomy.discernRanks();
     }
+    
+    public void annotateBlast(LCAParseOptions options) {
+        AccessionTaxonConvertor atc = new AccessionTaxonConvertor();
+        atc.readMapFile(options.getMapFilename(), true);
+        BufferedReader br;
+        PrintWriter pw;
+
+        try {
+            br = new BufferedReader(new FileReader(options.getInputFilename()));
+            pw = new PrintWriter(new FileWriter(options.getInputFilename() + ".annotated"));
+            String line;
+
+            do {
+                line = br.readLine();
+                if (line != null) {
+                    String[] fields = line.split("\t");
+                    String accession=fields[4];
+                    Long taxon = atc.getTaxonFromAccession(accession);
+                    pw.print(line);
+                    pw.println("\t"+taxon);
+                }
+            } while (line != null);
+            br.close();
+            pw.close();
+            
+            //printEquals();
+        } catch (Exception e) {
+            System.out.println("annotateBlast Exception:");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     public static void main(String[] args) {
         LCAParseOptions lpo = new LCAParseOptions();
@@ -64,6 +101,9 @@ public class LCAParse {
         } else if (lpo.doingMakeMap()) {
             LCAParse pp = new LCAParse();
             pp.makeMapFile(lpo);
+        } else if (lpo.doingAnnotate()) {
+            LCAParse pp = new LCAParse();
+            pp.annotateBlast(lpo);
         } else {
             LCAParse pp = new LCAParse();
             pp.parseFile(lpo);

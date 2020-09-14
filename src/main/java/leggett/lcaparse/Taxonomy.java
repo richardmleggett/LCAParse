@@ -310,7 +310,13 @@ public class Taxonomy {
     }
     
     public String getNameFromTaxonId(Long id) {
-        return nameById.get(id);
+        if (nameById.containsKey(id)) {
+            return nameById.get(id);
+        } else if (id == -2) {
+            return "Not assigned";
+        } else {
+            return "Taxon ID "+id; 
+        }
     }
     
     public Long getTaxonIdFromName(String name) {
@@ -362,6 +368,8 @@ public class Taxonomy {
                         n = null;
                     }
                 }
+            } else if (id == -2) {
+                taxonString="Not assigned";
             } else {
                 taxonString="Taxon ID "+Long.toString(id);
             }

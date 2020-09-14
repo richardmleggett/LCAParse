@@ -13,6 +13,7 @@ import java.util.Hashtable;
 
 public class AccessionTaxonConvertor {
     private Hashtable<String, Long> accessionToTaxon = new Hashtable();
+    private Hashtable<String, Integer> warningAccession = new Hashtable();
     int count = 0;
     
     public AccessionTaxonConvertor() {  
@@ -63,10 +64,18 @@ public class AccessionTaxonConvertor {
         if (accessionToTaxon.containsKey(accession)) {
             r = accessionToTaxon.get(accession);
         } else {
-            System.out.println("Can't find accession "+accession);
+            warnAccession(accession);
         }
         
         return r;
     }
     
+    public void warnAccession(String accession) {
+        //if (options.showWarnings()) {
+            if (!warningAccession.containsKey(accession)) {
+                warningAccession.put(accession, 1);
+                System.out.println("Warning: unknown accession "+accession);
+            }
+        //}
+    }    
 }

@@ -16,12 +16,13 @@ public class LCAParseOptions {
     public final static int FORMAT_NANOOK = 2;
     public final static int FORMAT_BLASTTAB = 3;
     public final static int FORMAT_BLASTTAXON = 4;
+    public final static int FORMAT_SAM = 5;
     private String inputFilename = null;
     private String outputPrefix = null;
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.6";
+    public final static String version="v0.7";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
     private double minIdentity = 0;
@@ -31,6 +32,7 @@ public class LCAParseOptions {
     private boolean doingMakeMap = false;
     private boolean doingRanks = false;
     private boolean withWarnings = false;
+    private boolean doingAnnotate = false;
     
     public LCAParseOptions() {
     }
@@ -90,6 +92,8 @@ public class LCAParseOptions {
             fileFormat = FORMAT_PAF;
         } else if (format.equalsIgnoreCase("blasttaxon")) {
             fileFormat = FORMAT_BLASTTAXON;
+        } else if (format.equalsIgnoreCase("sam")) {
+            fileFormat = FORMAT_SAM;
         } else {
             System.out.println("Unknown file format: " + format);
             System.exit(1);
@@ -148,6 +152,9 @@ public class LCAParseOptions {
             } else if (args[i].equalsIgnoreCase("-ranks")) {
                 doingRanks = true;
                 i++;
+            } else if (args[i].equalsIgnoreCase("-annotate")) {
+                doingAnnotate = true;
+                i++;
             } else {                
                 System.out.println("Unknown parameter: " + args[i]);
                 System.exit(1);
@@ -176,12 +183,17 @@ public class LCAParseOptions {
         }
         
         if (doingMakeMap == false) {  
-            if ((fileFormat == FORMAT_BLASTTAB) || (fileFormat == FORMAT_PAF)) {
+            if ((fileFormat == FORMAT_BLASTTAB) || (fileFormat == FORMAT_PAF) || (fileFormat == FORMAT_SAM)) {
                 if (mapFilename == null) {
                     System.out.println("Error: you must specify a -mapfile parameter");
                     System.exit(1);
                 }        
             }
+        }
+        
+        if (fileFormat == FORMAT_UNKNOWN) {
+            System.out.println("Error: you must specify the file format.");
+            System.exit(1);
         }
      }
     
@@ -257,7 +269,8 @@ public class LCAParseOptions {
     
     public boolean requiresAccessionMapping() {
         if ((fileFormat == FORMAT_PAF) ||
-            (fileFormat == FORMAT_BLASTTAB)) {
+            (fileFormat == FORMAT_BLASTTAB) ||
+            (fileFormat == FORMAT_SAM)) {
             return true;
         }
         
@@ -270,6 +283,10 @@ public class LCAParseOptions {
     
     public boolean doingRanks() {
         return doingRanks;
+    }
+    
+    public boolean doingAnnotate() {
+        return doingAnnotate;
     }
     
     public boolean showWarnings() {
