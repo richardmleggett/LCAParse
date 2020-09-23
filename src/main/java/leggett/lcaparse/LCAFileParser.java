@@ -135,25 +135,31 @@ public class LCAFileParser {
             
             for (String queryName : keys) {
                 LCAHitSet hs = hitsByQuery.get(queryName);
-                if (hs.hasUnknownTaxa()) {
-                    unknownTaxaCount++;
-                }
-                long ancestor = taxonomy.findAncestor(hs, options.getMaxHitsToConsider(), options.limitToSpecies());
-                int count = 0;
-                if (countsPerTaxon.containsKey(ancestor)) {
-                    count = countsPerTaxon.get(ancestor);
-                }
-                count++;
-                countsPerTaxon.put(ancestor, count);
-                totalCount++;
                 
-                String ancestorRank = "";
-                TaxonomyNode n = taxonomy.getNodeFromTaxonId(ancestor);
-                if (n != null) {
-                    ancestorRank = n.getRankString();
+                if (hs.getNumberOfAlignments() > 0) {
+                    if (hs.hasGoodAlignment()) {
+                        if (hs.hasUnknownTaxa()) {
+                            unknownTaxaCount++;
+                        }
+                        long ancestor = taxonomy.findAncestor(hs, options.getMaxHitsToConsider(), options.limitToSpecies());
+                        int count = 0;
+                        if (countsPerTaxon.containsKey(ancestor)) {
+                            count = countsPerTaxon.get(ancestor);
+                        }
+                        count++;
+                        countsPerTaxon.put(ancestor, count);
+                        totalCount++;
+
+                        String ancestorRank = "";
+                        TaxonomyNode n = taxonomy.getNodeFromTaxonId(ancestor);
+                        if (n != null) {
+                            ancestorRank = n.getRankString();
+                        }
+
+                        pwPerRead.println(queryName + "\t" + ancestor + "\t" + taxonomy.getNameFromTaxonId(ancestor)+ "\t" +ancestorRank);
+                        hs.setAssignedTaxon(ancestor);
+                    }
                 }
-                
-                pwPerRead.println(queryName + "\t" + ancestor + "\t" + taxonomy.getNameFromTaxonId(ancestor)+ "\t" +ancestorRank);
             }
             
             pwPerRead.close();
@@ -283,5 +289,9 @@ public class LCAFileParser {
             int count = entry.getValue();
             System.out.println(countsPerTaxon.get(taxon) + "\t" + taxon + "\t" + taxonomy.getTaxonomyStringFromId(taxon));            
         }        
+    }
+    
+    public Hashtable<String, LCAHitSet> getHitsByQuery() {
+        return hitsByQuery;
     }
 }

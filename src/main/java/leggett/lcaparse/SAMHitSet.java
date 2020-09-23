@@ -13,6 +13,7 @@ public class SAMHitSet implements LCAHitSet{
     private String queryName;
     private ArrayList<LCAHit> alignments = new ArrayList<LCAHit>();
     private int unknownTaxa = 0;
+    private long assignedTaxon = -2;
     
     public SAMHitSet(String query) {
         queryName = query;
@@ -46,6 +47,10 @@ public class SAMHitSet implements LCAHitSet{
         
         return ph;
     }
+
+    public String getQueryName() {
+        return queryName;
+    }
     
     public void printEntry() {
         for (int i=0; i<alignments.size(); i++) {
@@ -56,4 +61,16 @@ public class SAMHitSet implements LCAHitSet{
                                "\t" + alignments.get(i).getIdentity());
         }
     }
+
+     public void setAssignedTaxon(long id) {
+         assignedTaxon = id;
+     }
+     
+     public long getAssignedTaxon() {
+         return assignedTaxon;
+     }
+
+     public boolean hasGoodAlignment() {
+        return alignments.size() > 0 ? true:false;
+     }
 }

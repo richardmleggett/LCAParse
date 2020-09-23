@@ -9,12 +9,14 @@ package leggett.lcaparse;
 
 import java.util.ArrayList;
 
-public class PAFHitSet implements LCAHitSet{    
+public class PAFHitSet implements LCAHitSet {    
     private String queryName;
     private ArrayList<LCAHit> alignments = new ArrayList<LCAHit>();
     private double bestQueryCover = 0;
     private double bestIdentity = 0;
     private int unknownTaxa = 0;
+    private long assignedTaxon = -2;
+
     
     public PAFHitSet(String query) {
         queryName = query;
@@ -79,6 +81,10 @@ public class PAFHitSet implements LCAHitSet{
         
         return ph;
     }
+
+    public String getQueryName() {
+        return queryName;
+    }
     
     public void printEntry() {
         for (int i=0; i<alignments.size(); i++) {
@@ -88,5 +94,17 @@ public class PAFHitSet implements LCAHitSet{
                                "\t" + alignments.get(i).getQueryCover() + 
                                "\t" + alignments.get(i).getIdentity());
         }
+    }
+    
+     public void setAssignedTaxon(long id) {
+         assignedTaxon = id;
+     }
+     
+     public long getAssignedTaxon() {
+         return assignedTaxon;
+     }
+
+    public boolean hasGoodAlignment() {
+        return alignments.size() > 0 ? true:false;
     }
 }

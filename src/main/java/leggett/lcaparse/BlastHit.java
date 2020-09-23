@@ -10,12 +10,14 @@ package leggett.lcaparse;
 import java.util.ArrayList;
 
 public class BlastHit implements LCAHit {
+    public final static int UNKNOWN = -1;
     private Taxonomy taxonomy;
     private AccessionTaxonConvertor accTaxConvert;
     private String queryName;
     private int queryLength;
     private int queryStart;
     private int queryEnd;
+    private double queryCoverage = UNKNOWN;
     private String targetName;
     private int targetStart;
     private int targetEnd;
@@ -26,6 +28,8 @@ public class BlastHit implements LCAHit {
     private double identity;
     private double eValue;
     private long taxonId = -1;
+    private String bitscoreString;
+    private String eValueString;
     private ArrayList<Long> taxonIdPath;
     
     public BlastHit(Taxonomy t, AccessionTaxonConvertor atc, String line, int format) {
@@ -49,9 +53,10 @@ public class BlastHit implements LCAHit {
     }
     
     private void parseNanoOK(String[] fields) {
-        //"qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids"
+        // NanoOK14: "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle staxids"
+        // NanoOK15: "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle qcovs staxids"
 
-        if (fields.length == 14) {        
+        if ((fields.length == 14) || (fields.length == 15)) {        
             queryName = fields[0];
             targetName = fields[1];
             identity = Double.parseDouble(fields[2]);
@@ -62,16 +67,32 @@ public class BlastHit implements LCAHit {
             queryEnd = Integer.parseInt(fields[7]);
             targetStart = Integer.parseInt(fields[8]);
             targetEnd = Integer.parseInt(fields[9]);
-            eValue = Double.parseDouble(fields[10]);
-            bitscore = Double.parseDouble(fields[11]);
+            eValueString = fields[10] ; eValue = Double.parseDouble(eValueString);
+            bitscoreString = fields[11] ; bitscore = Double.parseDouble(bitscoreString);
             // title
-            String taxaString = fields[13];
-            String[] taxa = taxaString.split(";");
-            taxonId = Integer.parseInt(taxa[0]);
+            
+            if (fields.length == 14) {
+                String taxaString = fields[13];
+                String[] taxa = taxaString.split(";");
+                taxonId = Integer.parseInt(taxa[0]);
+            } else if (fields.length == 15) {
+                queryCoverage = Double.parseDouble(fields[13]);
+                String taxaString = fields[14];
+                String[] taxa = taxaString.split(";");
+                taxonId = Integer.parseInt(taxa[0]);
+            }
+            
+            
         } else {
             System.out.println("Error: input format doesn't seem to be NanoOK");
             System.exit(1);
         }
+    }
+    
+    public String getTabString() {
+        String s = String.format("%s\t%s\t%.2f\t%d\t%d\t%d\t%d\t%d\t%d\t%d%.6f\t%.2f\t%d\t%d", queryName, targetName, identity, length, mismatches, -1, queryStart, queryEnd, targetStart, targetEnd, eValue, bitscore, queryCoverage, taxonId);
+        
+        return s;
     }
 
     private void parseBlastTab(String[] fields) {
@@ -129,7 +150,7 @@ public class BlastHit implements LCAHit {
     }
     
     public double getQueryCover() {
-        return 0;
+        return queryCoverage;
     }
     
     public double getIdentity() {
@@ -142,6 +163,38 @@ public class BlastHit implements LCAHit {
     
     public double getEValue() {
         return eValue;
+    }
+    
+    public int getLength() {
+        return length;
+    }
+    
+    public int getMismatches() {
+        return mismatches;
+    }
+    
+    public int getQueryStart() {
+        return queryStart;
+    }
+
+    public int getQueryEnd() {
+        return queryEnd;
+    }
+
+    public int getHitStart() {
+        return targetStart;
+    }
+
+    public int getHitEnd() {
+        return targetEnd;
+    }
+        
+    public String getEValueString() {
+        return eValueString;
+    }
+    
+    public String getBitscoreString() {
+        return bitscoreString;
     }
     
     public void setTaxonIdPath(ArrayList<Long> path) {

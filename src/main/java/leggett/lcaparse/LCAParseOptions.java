@@ -22,10 +22,13 @@ public class LCAParseOptions {
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.7";
+    public final static String version="v0.8";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
-    private double minIdentity = 0;
+    private int minIdentity = 0;
+    private int minLength = 0;
+    private int minQueryCoverage = 0;
+    private int minCombinedScore = 0;
     private boolean limitToSpecies = false;
     private long expectedTaxon = 0;
     private long relatedTaxon = 0;
@@ -37,13 +40,17 @@ public class LCAParseOptions {
     public LCAParseOptions() {
     }
     
-    public LCAParseOptions(String taxonomyDir, String mapFile, String format, boolean limitSpecies, int maxHits, double scorePc) {
+    public LCAParseOptions(String taxonomyDir, String mapFile, String format, boolean limitSpecies, int maxHits, double scorePc, int minId, int minCov, int minCom, int minLen) {
         taxonomyDirectory = taxonomyDir;
         mapFilename = mapFile;
         processFormat(format);
         limitToSpecies = limitSpecies;
         maxHitsToConsider = maxHits;
         scorePercent = scorePc;
+        minIdentity = minId;
+        minQueryCoverage = minCov;
+        minCombinedScore = minCom;
+        minLength = minLen;
     }
     
     public void displayHelp() {
@@ -63,8 +70,12 @@ public class LCAParseOptions {
         System.out.println("    -format specifies input file format - either 'nanook', 'blasttab', 'blasttaxon' or 'PAF'");
         System.out.println("    -maxhits specifies maximum number of hits to consider for given read (default 20)");
         System.out.println("    -scorepercent specifies minimum score threshold as percentage of top score for given read (default 90)");
-        System.out.println("    -minidentity specifies minimum identity % (default 0)");               
-        System.out.println("    -limitspecies limits taxonomy to species level (default: off)");
+        System.out.println("LCA options:");
+        System.out.println("    -minidentity specifies minimum identity % (default 0)");        
+        System.out.println("    -mincoverage specifies minimum query coverage % (default 0)");
+        System.out.println("    -mincombined specifies minimum combined identity and query coverage (default 0)");
+        System.out.println("    -minlength specifies minimum length of hit (default 0)");
+        System.out.println("    -limitspecies limits taxonomy to species level (default: off)");        
         System.out.println("Analysis options:");
         System.out.println("    -expected specifies the taxon ID of expected species");
         System.out.println("    -relative specifies the taxon ID of close relative species");
@@ -135,7 +146,16 @@ public class LCAParseOptions {
                 scorePercent = Double.parseDouble(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-minidentity")) {
-                minIdentity = Double.parseDouble(args[i+1]);
+                minIdentity = Integer.parseInt(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-mincoverage")) {
+                minQueryCoverage = Integer.parseInt(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-mincombined")) {
+                minCombinedScore = Integer.parseInt(args[i+1]);
+                i+=2;
+            } else if (args[i].equalsIgnoreCase("-minlength")) {
+                minLength = Integer.parseInt(args[i+1]);
                 i+=2;
             } else if (args[i].equalsIgnoreCase("-limitspecies")) {
                 limitToSpecies = true;
@@ -233,8 +253,20 @@ public class LCAParseOptions {
         return scorePercent;
     }
     
-    public double getMinIdentity() {
+    public int getMinIdentity() {
         return minIdentity;
+    }
+
+    public int getMinQueryCoverage() {
+        return minQueryCoverage;
+    }
+    
+    public int getMinCombinedScore() {
+        return minCombinedScore;
+    }
+    
+    public int getMinLength() {
+        return minLength;
     }
         
     public boolean limitToSpecies() {
