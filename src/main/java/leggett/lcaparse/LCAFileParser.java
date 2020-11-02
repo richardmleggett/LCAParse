@@ -55,7 +55,7 @@ public class LCAFileParser {
                    (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAB) || 
                    (options.getFileFormat() == LCAParseOptions.FORMAT_BLASTTAXON))
         {
-            hit = new BlastHit(t, atc, line, options.getFileFormat());
+            hit = new BlastHit(t, atc, line, options.getFileFormat(), true);
         } else {
             System.out.println("Error in crerateNewHit - unexpected format\n");
             System.exit(1);

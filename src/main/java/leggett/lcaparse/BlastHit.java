@@ -28,16 +28,18 @@ public class BlastHit implements LCAHit {
     private double identity;
     private double eValue;
     private long taxonId = -1;
+    private boolean parseTaxon;
     private String bitscoreString;
     private String eValueString;
     private ArrayList<Long> taxonIdPath;
     
-    public BlastHit(Taxonomy t, AccessionTaxonConvertor atc, String line, int format) {
+    public BlastHit(Taxonomy t, AccessionTaxonConvertor atc, String line, int format, boolean parse) {
         String[] fields = line.split("\t");
                 
         taxonomy = t;
         accTaxConvert = atc;
-        
+        parseTaxon = parse;
+                
         if (format == LCAParseOptions.FORMAT_NANOOK) {
             parseNanoOK(fields);
         } else if ((format == LCAParseOptions.FORMAT_BLASTTAB) ||
@@ -74,7 +76,12 @@ public class BlastHit implements LCAHit {
             if (fields.length == 14) {
                 String taxaString = fields[13];
                 String[] taxa = taxaString.split(";");
-                taxonId = Integer.parseInt(taxa[0]);
+                
+                try {
+                    taxonId = Integer.parseInt(taxa[0]);
+                } catch (NumberFormatException e) {                    
+                    taxonId = -2;
+                }
             } else if (fields.length == 15) {
                 queryCoverage = Double.parseDouble(fields[13]);
                 String taxaString = fields[14];
@@ -126,13 +133,21 @@ public class BlastHit implements LCAHit {
             if (fields.length == 13) {
                 String taxaString = fields[12];
                 String[] taxa = taxaString.split(";");
-                taxonId = Integer.parseInt(taxa[0]);
+                
+                try {
+                    taxonId = Integer.parseInt(taxa[0]);
+                } catch (NumberFormatException e) {                    
+                    taxonId = -2;
+                }
+                
             } else {
-                if (accTaxConvert != null) {
-                    taxonId = accTaxConvert.getTaxonFromAccession(targetName);       
-                } else {
-                    System.out.println("Error: you haven't specified a mapfile and the input file doesn't have taxon IDs");
-                    System.exit(1);                
+                if (parseTaxon) {
+                    if (accTaxConvert != null) {
+                        taxonId = accTaxConvert.getTaxonFromAccession(targetName);       
+                    } else {
+                        System.out.println("Error: you haven't specified a mapfile and the input file doesn't have taxon IDs");
+                        System.exit(1);                
+                    }
                 }
             }
         } else {
@@ -226,5 +241,5 @@ public class BlastHit implements LCAHit {
         if (taxonId != -1) {
             taxonIdPath = taxonomy.getTaxonIdPathFromId(taxonId);
         }
-    }     
+    }         
 }

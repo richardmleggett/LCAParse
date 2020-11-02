@@ -22,7 +22,7 @@ public class LCAParseOptions {
     private String taxonomyDirectory = null;
     private String mapFilename = null;
     private int fileFormat = 0;
-    public final static String version="v0.8";
+    public final static String version="v0.9";
     private int maxHitsToConsider = 20;
     private double scorePercent = 90;
     private int minIdentity = 0;
