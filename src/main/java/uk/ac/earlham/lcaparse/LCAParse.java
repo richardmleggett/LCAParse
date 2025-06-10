@@ -1,39 +1,54 @@
 /*
- * Program: LCAParse
- * Author:  Richard M. Leggett
- * 
- * Copyright 2020 Earlham Institute
+ * Author: Richard M. Leggett
+ * © Copyright 2021 Earlham Institute
  */
 
-package leggett.lcaparse;
+package uk.ac.earlham.lcaparse;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import uk.ac.earlham.marti.core.MARTiLog;
 
+/**
+ * Main class for command line utility.
+ * 
+ * @author Richard M. Leggett
+ */
 public class LCAParse {    
     public void parseFile(LCAParseOptions options) {
         AccessionTaxonConvertor atc = null;
+        MARTiLog logFile = new MARTiLog();
         
         System.out.println("");
         System.out.println("LCAParse "+LCAParseOptions.version);
         System.out.println("");        
- 
-        Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+
+        Taxonomy taxonomy = new Taxonomy(null, options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         options.displayMemory();
         
         if (options.requiresAccessionMapping()) {
             atc = new AccessionTaxonConvertor();
-            atc.readMapFile(options.getMapFilename(), true);
+            if (options.getMapFilename() != null) {
+                atc.readMapFile(options.getMapFilename(), true);
+            }
         }
         
         options.displayMemory();
-        LCAFileParser pfp = new LCAFileParser(taxonomy, options, atc);        
+        LCAFileParser pfp = new LCAFileParser(taxonomy, options, atc, false, logFile);        
+        options.displayOptions();
                 
         System.out.println("Parsing...");
         pfp.parseFile(options.getInputFilename());
-        pfp.writeResults(options.getTaxaSummaryOutputFilename(), options.getPerReadOutputFilename());
+        
+        System.out.println("Removing poor alignments");
+        ArrayList<String> queriesToRemove = pfp.removePoorAlignments();
+        int readsRemoved = queriesToRemove.size();
+        System.out.println("Removed "+readsRemoved+" reads");        
+        
+        pfp.findAncestorAndWriteResults(options.getTaxaSummaryOutputFilename(), options.getPerReadOutputFilename());
         System.out.println("");
         System.out.println("Done");
         System.out.println("");
@@ -44,17 +59,17 @@ public class LCAParse {
         //AccessionMapFilter amf = new AccessionMapFilter(taxonomy);
         //amf.filterMapFile("/Users/leggettr/Documents/Databases/taxonomy_27Mar20/accession2taxid/nucl_gb.accession2taxid", "bacteriamap.txt", "virusesmap.txt");
         //pfp.parseFile("/Users/leggettr/Desktop/PAFparse/output_sorted.paf");
-        //pfp.writeResults("/Users/leggettr/Desktop/PAFparse/results.txt");        
+        //pfp.findAncestorAndWriteResults("/Users/leggettr/Desktop/PAFparse/results.txt");        
     }
     
     public void makeMapFile(LCAParseOptions options) {
-        Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+        Taxonomy taxonomy = new Taxonomy(null, options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         AccessionMapFilter amf = new AccessionMapFilter(taxonomy);
         amf.filterMapFile(options.getInputFilename(),options.getOutputPrefix());
     }
     
     public void discernTaxonomy(LCAParseOptions options) {
-        Taxonomy taxonomy = new Taxonomy(options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
+        Taxonomy taxonomy = new Taxonomy(null, options, options.getTaxonomyDirectory() + "/nodes.dmp", options.getTaxonomyDirectory() + "/names.dmp");  
         options.displayMemory();
         taxonomy.discernRanks();
     }
